@@ -1,0 +1,17 @@
+{
+  "name": "samaya",
+  "interface": {
+    "displayName": "Samaya AI"
+  },
+  "plugins": [
+    {
+      "name": "samaya-finance-skills",
+      "source": { "source": "local", "path": "./" },
+      "category": "Finance",
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      }
+    }
+  ]
+}

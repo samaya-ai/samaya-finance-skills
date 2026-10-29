@@ -1,0 +1,369 @@
+{
+ "company": "Apple Inc.",
+ "benchmark_name": "SPDR S&P 500 ETF",
+ "as_of": "2026-10-15",
+ "releases": [
+  {
+   "t0": "2026-01-30",
+   "release": "2026-01-29 16:30",
+   "label": "Q1 FY26 results"
+  },
+  {
+   "t0": "2026-05-01",
+   "release": "2026-04-30 16:30",
+   "label": "Q2 FY26 results"
+  },
+  {
+   "t0": "2026-07-31",
+   "release": "2026-07-30 16:30",
+   "label": "Q3 FY26 results"
+  }
+ ],
+ "after_hours_days": [
+  "2026-01-29",
+  "2026-04-30",
+  "2026-07-30"
+ ],
+ "context_events": [
+  {
+   "date": "2025-10-31",
+   "label": "Q4 FY25 results (released 30 Oct); December-quarter growth guided to 10-12%",
+   "source": {
+    "title": "Apple Inc., Q4 2025 Earnings Call, Oct 30, 2025",
+    "source_name": "Transcripts",
+    "date": "2025-10-30",
+    "url": "https://app.samaya.ai/u/aPSQ4iMr3Jm"
+   }
+  },
+  {
+   "date": "2026-01-30",
+   "label": "Q1 FY26 results (released 29 Jan after the close)",
+   "source": {
+    "title": "Apple Inc. (AAPL) 8-K, Jan 29, 2026",
+    "source_name": "Filings",
+    "date": "2026-01-29",
+    "url": "https://app.samaya.ai/u/cQDCQHw3Tsx"
+   }
+  },
+  {
+   "date": "2026-04-21",
+   "label": "CEO succession announced 20 Apr after the close: John Ternus to succeed Tim Cook on 1 Sep",
+   "source": {
+    "title": "Apple Inc. (AAPL) 8-K, Apr 20, 2026",
+    "source_name": "Filings",
+    "date": "2026-04-20",
+    "url": "https://app.samaya.ai/u/8dAHxzaXC13"
+   }
+  }
+ ],
+ "events": [
+  {
+   "dates": [
+    "2025-10-20"
+   ],
+   "label": "iPhone 17 early sales beat iPhone 16 (third-party data)",
+   "category": "Product and demand",
+   "tier": "reported",
+   "release": null,
+   "summary": "Counterpoint data showed the iPhone 17 series outselling its predecessor by 14% in its first 10 days in the U.S. and China. The stock closed at a record high.",
+   "follow_on": null,
+   "sources": [
+    {
+     "title": "iPhone 17 outsells predecessor by 14% in early China, US sales",
+     "source_name": "Web",
+     "date": "2025-10-20",
+     "url": "https://app.samaya.ai/u/dwI4foYCctr"
+    },
+    {
+     "title": "Apple's iPhone 17 outpaces predecessor with strong U.S. and China demand",
+     "source_name": "Web",
+     "date": "2025-10-20",
+     "url": "https://app.samaya.ai/u/7175jPkfKzR"
+    }
+   ]
+  },
+  {
+   "dates": [
+    "2026-01-20"
+   ],
+   "label": "Fell harder than the market in a tariff sell-off",
+   "category": "Unattributed",
+   "tier": "none",
+   "release": null,
+   "summary": "All the largest U.S. tech stocks fell on tariff threats, but Apple fell further than its beta implies. No Apple-specific release or news item explains the extra decline.",
+   "follow_on": null,
+   "sources": [
+    {
+     "title": "AAPL Company News, 20 Jan 2026 (searched)",
+     "source_name": "News",
+     "date": "2026-01-20",
+     "url": "https://app.samaya.ai/u/VapgS1WdX4"
+    }
+   ]
+  },
+  {
+   "dates": [
+    "2026-01-26"
+   ],
+   "label": "Pre-results rally on bullish sell-side previews",
+   "category": "Sell-side commentary",
+   "tier": "reported",
+   "release": null,
+   "summary": "No company release in the window. Coverage tied the move to sell-side previews expecting iPhone 17 strength to drive a beat when December-quarter results arrived that week.",
+   "follow_on": null,
+   "sources": [
+    {
+     "title": "AAPL Company News, 16-26 Jan 2026",
+     "source_name": "News",
+     "date": "2026-01-26",
+     "url": "https://app.samaya.ai/u/VlBr7Kos39"
+    }
+   ]
+  },
+  {
+   "dates": [
+    "2026-02-02"
+   ],
+   "label": "Delayed rally after a December quarter above guidance",
+   "category": "Earnings and guidance",
+   "tier": "reported",
+   "release": null,
+   "summary": "December-quarter revenue rose 16%, above the 10-12% guide, and March-quarter growth was guided to 13-16%. The stock barely moved on 30 Jan; coverage tied this rally to the record quarter.",
+   "follow_on": null,
+   "sources": [
+    {
+     "title": "Apple Inc. (AAPL) 8-K, Jan 29, 2026",
+     "source_name": "Filings",
+     "date": "2026-01-29",
+     "url": "https://app.samaya.ai/u/cQDCQHw3Tsx"
+    },
+    {
+     "title": "Apple Inc., Q4 2025 Earnings Call: December-quarter guide",
+     "source_name": "Transcripts",
+     "date": "2025-10-30",
+     "url": "https://app.samaya.ai/u/aPSQ4iMr3Jm"
+    },
+    {
+     "title": "Apple Inc., Q1 2026 Earnings Call: March-quarter guide",
+     "source_name": "Transcripts",
+     "date": "2026-01-29",
+     "url": "https://app.samaya.ai/u/ccxhisTAjgY"
+    },
+    {
+     "title": "AAPL Company News, 29 Jan-4 Feb 2026",
+     "source_name": "News",
+     "date": "2026-02-02",
+     "url": "https://app.samaya.ai/u/d8SwJQaLgb4"
+    }
+   ]
+  },
+  {
+   "dates": [
+    "2026-02-04"
+   ],
+   "label": "Rose as a perceived AI safe haven in a tech sell-off",
+   "category": "Sector rotation",
+   "tier": "reported",
+   "release": null,
+   "summary": "Software and other tech stocks sold off on AI-disruption fears; coverage said investors treated Apple's hardware business as insulated, and it outperformed tech by the widest margin in a year.",
+   "follow_on": null,
+   "sources": [
+    {
+     "title": "AAPL Company News, 29 Jan-4 Feb 2026",
+     "source_name": "News",
+     "date": "2026-02-04",
+     "url": "https://app.samaya.ai/u/d8SwJQaLgb4"
+    }
+   ]
+  },
+  {
+   "dates": [
+    "2026-02-12"
+   ],
+   "label": "FTC warning letter and a reported Siri upgrade delay",
+   "category": "Regulatory and legal",
+   "tier": "reported",
+   "release": null,
+   "summary": "The FTC chair sent a letter warning that Apple News may breach the FTC Act, and a report the day before said the revamped Siri was slipping beyond its March target.",
+   "follow_on": null,
+   "sources": [
+    {
+     "title": "Federal Trade Commission issues letter to Apple on Apple News",
+     "source_name": "Web",
+     "date": "2026-02-12",
+     "url": "https://app.samaya.ai/u/f6ofyufZVeq"
+    },
+    {
+     "title": "Apple's latest attempt to launch the new Siri runs into snags",
+     "source_name": "Web",
+     "date": "2026-02-11",
+     "url": "https://app.samaya.ai/u/5v27Afwviyp"
+    },
+    {
+     "title": "AAPL Company News, 11-12 Feb 2026",
+     "source_name": "News",
+     "date": "2026-02-12",
+     "url": "https://app.samaya.ai/u/l0WGczPuiZI"
+    }
+   ]
+  },
+  {
+   "dates": [
+    "2026-05-01"
+   ],
+   "label": "March quarter above guidance; $100B buyback",
+   "category": "Earnings and guidance",
+   "tier": "confirmed",
+   "release": "2026-04-30 16:30",
+   "guidance_check": "March-quarter revenue +17% vs a 13-16% guide: above range",
+   "summary": "Released after the 30 Apr close. March-quarter revenue rose 17%, above the 13-16% guide. June-quarter growth was guided to 14-17%, a further $100B buyback was authorized and the dividend raised 4%.",
+   "follow_on": null,
+   "sources": [
+    {
+     "title": "Apple Inc. (AAPL) 8-K, Apr 30, 2026",
+     "source_name": "Filings",
+     "date": "2026-04-30",
+     "url": "https://app.samaya.ai/u/hikWlhFfJRm"
+    },
+    {
+     "title": "Apple reports second quarter results (timestamped copy)",
+     "source_name": "Press Releases (web copy, timestamped)",
+     "date": "2026-04-30",
+     "url": "https://app.samaya.ai/u/9Degwkmaj4X"
+    },
+    {
+     "title": "Apple Inc., Q1 2026 Earnings Call: March-quarter guide",
+     "source_name": "Transcripts",
+     "date": "2026-01-29",
+     "url": "https://app.samaya.ai/u/ccxhisTAjgY"
+    },
+    {
+     "title": "Apple Inc., Q2 2026 Earnings Call: June-quarter guide, buyback",
+     "source_name": "Transcripts",
+     "date": "2026-04-30",
+     "url": "https://app.samaya.ai/u/2dJheeF6xpu"
+    },
+    {
+     "title": "AAPL Company News, 30 Apr-1 May 2026",
+     "source_name": "News",
+     "date": "2026-05-01",
+     "url": "https://app.samaya.ai/u/5jzVSK0eszh"
+    }
+   ]
+  },
+  {
+   "dates": [
+    "2026-06-25"
+   ],
+   "label": "Raised Mac and iPad prices to offset memory costs",
+   "category": "Product and pricing",
+   "tier": "reported",
+   "release": null,
+   "summary": "Apple raised prices across Macs, iPads, Vision Pro and home devices, saying in a statement that it could no longer absorb an unprecedented rise in memory and storage costs. iPhone prices were unchanged.",
+   "follow_on": null,
+   "sources": [
+    {
+     "title": "Apple raises prices of MacBooks, iPads as memory costs skyrocket",
+     "source_name": "Web",
+     "date": "2026-06-25",
+     "url": "https://app.samaya.ai/u/ln52xX41LDj"
+    },
+    {
+     "title": "Apple just increased prices on MacBooks, iPads, and more",
+     "source_name": "Web",
+     "date": "2026-06-25",
+     "url": "https://app.samaya.ai/u/JmERxxhvZj"
+    },
+    {
+     "title": "AAPL Company News, 24-25 Jun 2026",
+     "source_name": "News",
+     "date": "2026-06-25",
+     "url": "https://app.samaya.ai/u/6Zxp73yuhuS"
+    }
+   ]
+  },
+  {
+   "dates": [
+    "2026-07-31"
+   ],
+   "label": "September-quarter growth guided down to 9-11% on supply limits",
+   "category": "Earnings and guidance",
+   "tier": "confirmed",
+   "release": "2026-07-30 16:30",
+   "guidance_check": "September-quarter guide 9-11% vs a 14-17% June-quarter guide",
+   "summary": "Released after the 30 Jul close. Management guided September-quarter revenue growth to 9-11%, citing supply constraints across iPhone, Mac and iPad expected to increase significantly and a 2.5-point currency headwind.",
+   "follow_on": "Same day: 1 downgrade and price-target cuts (reported).",
+   "sources": [
+    {
+     "title": "AAPL Company Press Releases, 30-31 Jul 2026",
+     "source_name": "Market Data (press release feed)",
+     "date": "2026-07-30",
+     "url": "https://app.samaya.ai/u/hiS61S9ZfxU"
+    },
+    {
+     "title": "Apple Inc., Q3 2026 Earnings Call: September-quarter guide",
+     "source_name": "Transcripts",
+     "date": "2026-07-30",
+     "url": "https://app.samaya.ai/u/3hnbtwOEbar"
+    },
+    {
+     "title": "Apple Inc., Q2 2026 Earnings Call: June-quarter guide",
+     "source_name": "Transcripts",
+     "date": "2026-04-30",
+     "url": "https://app.samaya.ai/u/2dJheeF6xpu"
+    },
+    {
+     "title": "AAPL Company News, 30-31 Jul 2026",
+     "source_name": "News",
+     "date": "2026-07-31",
+     "url": "https://app.samaya.ai/u/hbkbtwPS3pV"
+    }
+   ]
+  }
+ ],
+ "story": {
+  "headline": "Apple's 37% gain came on quiet days: its nine flagged sessions netted a 6% loss, even as two quarters beat guidance.",
+  "chapters": [
+   {
+    "from": "2025-10-16",
+    "to": "2026-01-20",
+    "title": "iPhone 17 rally, then round trip",
+    "text": "Early iPhone 17 data lifted the stock to a record; by 20 Jan it had round-tripped.",
+    "event_dates": [
+     "2025-10-20",
+     "2026-01-20"
+    ]
+   },
+   {
+    "from": "2026-01-20",
+    "to": "2026-06-02",
+    "title": "Two quarters above guidance",
+    "text": "December and March quarters beat the company's growth guide; a further $100B buyback followed.",
+    "event_dates": [
+     "2026-01-26",
+     "2026-02-02",
+     "2026-02-04",
+     "2026-02-12",
+     "2026-05-01"
+    ]
+   },
+   {
+    "from": "2026-06-02",
+    "to": "2026-08-12",
+    "title": "Memory costs catch up",
+    "text": "Price hikes and a 9-11% September-quarter guide cost 13%; quiet-day gains in July offset most of it.",
+    "event_dates": [
+     "2026-06-25",
+     "2026-07-31"
+    ]
+   },
+   {
+    "from": "2026-08-12",
+    "to": "2026-10-15",
+    "title": "A record on quiet days",
+    "text": "No flagged sessions: the stock rose to a record close with the market part roughly flat.",
+    "event_dates": []
+   }
+  ]
+ }
+}

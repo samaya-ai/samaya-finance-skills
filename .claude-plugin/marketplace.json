@@ -1,0 +1,16 @@
+{
+  "name": "samaya",
+  "description": "Official Samaya AI plugin marketplace: financial research skills and the Samaya MCP server",
+  "owner": {
+    "name": "Samaya AI",
+    "url": "https://samaya.ai",
+    "email": "feedback@samaya.ai"
+  },
+  "plugins": [
+    {
+      "name": "samaya-finance-skills",
+      "source": "./",
+      "description": "Finance research workflows powered by Samaya: build and update financial models, results-day variance tables, earnings recaps, capital allocation reviews and fact checks, with every figure sourced and cited through the Samaya MCP server"
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "name": "samaya-finance-skills",
+  "version": "1.1.3",
+  "description": "Finance research workflows powered by Samaya: build and update financial models, results-day variance tables, earnings recaps, capital allocation reviews and fact checks, with every figure sourced and cited through the Samaya MCP server",
+  "author": {
+    "name": "Samaya AI",
+    "url": "https://samaya.ai",
+    "email": "feedback@samaya.ai"
+  },
+  "homepage": "https://samaya.ai",
+  "repository": "https://github.com/samaya-ai/samaya-finance-skills",
+  "keywords": [
+    "finance",
+    "equity-research",
+    "financial-modeling",
+    "valuation",
+    "earnings",
+    "consensus",
+    "guidance",
+    "samaya",
+    "buy-side",
+    "investment-research"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Samaya Finance Skills",
+    "shortDescription": "Sourced finance research",
+    "longDescription": "Finance research workflows for analysts and portfolio managers, running on Samaya's financial research MCP server. Build and roll forward three-statement models, produce results-day variance tables and earnings recaps, fact-check and reconcile figures against their sources, score guidance credibility, track risk factors and company KPIs across filings, map revenue and cost drivers, end-market exposure and correlations, break down M&A deals, and react to price moves and new documents, straight into Excel, Word and PowerPoint. Every figure is pulled from filings, transcripts, guidance and consensus through Samaya and carries a citation back to its source.",
+    "developerName": "Samaya AI",
+    "category": "Finance",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://samaya.ai",
+    "privacyPolicyURL": "https://samaya.ai/privacy/privacy",
+    "supportURL": "https://samaya.ai/support",
+    "termsOfServiceURL": "https://samaya.ai/terms",
+    "defaultPrompt": [
+      "Build a results-day variance table for a company I cover",
+      "Roll my financial model forward for the latest reported quarter",
+      "Build the bull and bear case on a stock, then cross-examine both"
+    ],
+    "brandColor": "#0019FF",
+    "logo": "./assets/logo.png",
+    "composerIcon": "./assets/logo.png"
+  },
+  "extensions": {
+    "com.openai": {
+      "onboardingSkill": "./skills/get-started/SKILL.md"
+    }
+  }
+}
