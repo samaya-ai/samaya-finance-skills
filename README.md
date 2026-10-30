@@ -63,7 +63,7 @@ Samaya workflow, including the chat-only ones the server keeps behind `find_skil
 ## Support
 
 Questions and feedback: [feedback@samaya.ai](mailto:feedback@samaya.ai).
-Privacy policy: [samaya.ai/privacy](https://samaya.ai/privacy/privacy).
+Privacy policy: [samaya.ai/privacy](https://samaya.ai/privacy).
 
 ## License
 

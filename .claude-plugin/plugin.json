@@ -1,6 +1,6 @@
 {
   "name": "samaya-finance-skills",
-  "version": "1.1.3",
+  "version": "1.1.4",
   "description": "Finance research workflows powered by Samaya: build and update financial models, results-day variance tables, earnings recaps, capital allocation reviews and fact checks, with every figure sourced and cited through the Samaya MCP server",
   "author": {
     "name": "Samaya AI",
@@ -23,7 +23,7 @@
     "investment-research"
   ],
   "icon": "./assets/logo.png",
-  "privacyPolicyUrl": "https://samaya.ai/privacy/privacy",
+  "privacyPolicyUrl": "https://samaya.ai/privacy",
   "supportUrl": "https://samaya.ai/support",
   "termsOfServiceUrl": "https://samaya.ai/terms"
 }
