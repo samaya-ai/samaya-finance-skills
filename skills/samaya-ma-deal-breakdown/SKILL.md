@@ -83,16 +83,19 @@ M&A call, proxy / S-4, later 10-Q/10-K). One subject per call.
 
 - **Card:** 1 call — offer price, consideration, equity value, EV, diluted shares, net debt, every
   published multiple with basis, premium. +1 follow-up only if the pre-synergy / as-paid version is missing.
-- **Full:** 4 calls —
-  1. **Numbers:** the Card fields + sources & uses, committed financing, leverage at close (both bases).
-  2. **Synergies and terms:** cost / revenue synergies, timing, cost to achieve, break and ticking
+- **Full:** 4 calls (5 for a closed deal) —
+  1. **Numbers:** the Card fields + committed financing, leverage at close (both bases).
+  1b. **Closing cash flows (closed deals only):** the call in `references/sources-and-uses.md`.
+  2. **Synergies and terms:** cost / revenue synergies, timing, cost to achieve, combined cost base,
+     management's sizing of synergies, break and ticking
      fees, conditions, regulatory status, votes, close date, advisers.
   3. **Market data and views:** target and acquirer closing prices on the undisturbed date, the day
      before and after each key event, and latest; sell-side and credit views.
   4. **Safety net (broad):** "Any other material facts on <A>/<T> not covered above — rival bids,
      litigation, financing changes, remedies, similar recent deals in the sector and peer impact."
      This catches what narrow calls miss; never drop it.
-  +1 follow-up only if the pre-synergy / as-paid multiple is still missing.
+  +1 follow-up only if the pre-synergy multiple is still missing (`references/pre-synergy.md`).
+  +1 follow-up if Table C's gap exceeds 5% (`references/sources-and-uses.md`).
 - **Precedents:** 1 call per batch of ~5 deals, same fields and basis.
 - **Drill-down:** 1 call naming document and page / slide / schedule.
 - **Judgment:** reuse Card data; +1 call for acquirer trading multiple and closest precedents.
@@ -143,9 +146,9 @@ date · sourced or implied · primary or third-party.
   adjusted / GAAP / IFRS · pre/post IFRS 16 · pro forma / reported · LTM / NTM / FY · to undisturbed /
   last close / 30-day VWAP.
 - Never strip the qualifier: "7.5x TEV / 2026E Adj. EBITDA incl. $6B run-rate synergies, deck slide 10".
-- **(impl.)** shows its formula and needs a published input on the same row. If only the post-synergy
-  multiple is published, back out pre-synergy: `EV ÷ (EV ÷ headline multiple − synergies)`; note if
-  synergies are a floor.
+- **(impl.)** shows its formula and needs a published input on the same row. Pre-synergy multiple or
+  leverage not published → `references/pre-synergy.md` (slide follow-up, then back-out).
+- Company figures that don't reconcile → mark *unreconciled*; give a cause only if a source does.
 - Two sources, two values → show both; never average. Currency as announced; conversions dated.
 
 ## TABLES — one kind of number per table, and they tie
@@ -162,7 +165,8 @@ VWAP · target's undisturbed trading multiple (last). Company and implied rows o
 primary source but missing here is a build failure.
 
 **C. Sources & uses** — sources vs uses (target equity, refinanced debt, fees and break fees paid),
-totals. Gap → *(impl.)* plug, flagged. Debt tranche detail → D or Deal details.
+totals. Debt tranche detail → D or Deal details.
+Before building C, read and follow `references/sources-and-uses.md`.
 
 **D. Key terms — TABLE D TEST.** Own section only if: deal **pending**; **stock or mixed**
 consideration; **CVR / earn-out**; or a **material tax / structure benefit** with disclosed value.
@@ -172,7 +176,8 @@ collar · CVR · target and reverse fees (% equity value) · ticking fee · tax 
 leverage target · ownership split · accretion / dilution by year and basis.
 
 **E. Synergies** — cost (by bucket) · revenue · cost to achieve · % of cost base · capitalised value.
-Company figures only. Then ≤ 3 one-line bullets: confidence read (*high / medium / low*, one reason);
+Company figures only, plus the two scale checks in `references/synergy-scale.md`. Then ≤ 3 one-line
+bullets: confidence read (*high / medium / low*, one reason, naming the scale check it rests on);
 acquirer track record (promised vs delivered, dated); disclosure gaps or call pushback. Never sum cost
 and revenue synergies without showing each.
 
@@ -228,18 +233,8 @@ never a buy / sell call.
 
 ## PRECEDENTS MODE
 
-Columns: Announced · Closed / expected / terminated · Acquirer · Target · EV · Target sales · Target
-EBITDA (basis, period) · EV/Sales · EV/EBITDA · Synergies (cost / revenue, run-rate yr) · Synergies %
-sales *(impl.)* · Synergy-adj. EV/EBITDA · Premium · Status · Source.
-- **Same basis per column** (default LTM at announcement, pre-synergy, company-adjusted EBITDA); other
-  bases flagged in the cell; never mixed silently in a median.
-- *(impl.)* only when EV and denominator are published for the same period; else *n/a* — never press
-  estimates.
-- Cost and revenue synergies shown separately; synergy-adj. = EV / (EBITDA + run-rate cost synergies),
-  formula stated once.
-- Press-reported deals in a separate block, outside the median.
-- One line: median and range, pre- and post-synergy, with row counts. No per-deal narrative.
-- **Delivered as Excel by default** (see OUTPUT → Precedents).
+Read and follow `references/precedents-mode.md` (columns, basis, synergy-adjusted multiple,
+median line). **Delivered as Excel by default** (see OUTPUT → Precedents).
 
 ## DRILL-DOWN MODE
 
@@ -269,7 +264,7 @@ say so first, then give the nearest source.
 - [ ] Deck and proxy retrieved, or absence on the appendix's first line.
 - [ ] Every *multiple, EV/, EBITDA, leverage, EPS, accretive, premium, margin* has a basis label.
 - [ ] Every primary version of each metric is in Table B; pre-synergy row first.
-- [ ] A ties to EV; C sources = uses; plugs marked with formula.
+- [ ] A ties to EV; C passes the checklist in `references/sources-and-uses.md`.
 - [ ] No third-party data in main tables; no *n/a*-only rows or sections; gaps in Not found.
 - [ ] D and G only when their conditions hold; G achievements dated, post-close.
 - [ ] Timeline 5–8 price/fee/close events with price moves; industry block short and sourced.
