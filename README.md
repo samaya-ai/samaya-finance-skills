@@ -11,7 +11,7 @@ in with the same credentials you use at [app.samaya.ai](https://app.samaya.ai).
 
 ## What is included
 
-Eighteen workflow skills, `use-samaya`, the entry point that matches a request to the right
+Nineteen workflow skills, `use-samaya`, the entry point that matches a request to the right
 Samaya workflow, including the chat-only ones the server keeps behind `find_skill`, and
 `get-started`, a first-run check that the connector is connected.
 
@@ -37,6 +37,7 @@ Samaya workflow, including the chat-only ones the server keeps behind `find_skil
 | `samaya-reconciliation` | Why two figures disagree, a bridge between them, and which to use |
 | `samaya-trigger-doc-drop` | A standing alert for new filings, transcripts, releases or research |
 | `samaya-trigger-price-move` | A standing alert on a price level or a relative move |
+| `samaya-trigger-news` | A standing alert on company, industry or macro news, scoped to one topic |
 
 ## Install
 
