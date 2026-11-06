@@ -95,6 +95,10 @@ Off by default. Use them when the person asks, or when the stock's situation cal
   stock driven by US-listed peers, `prior` matches each local session with the foreign move
   over the sessions that closed before it opened. In the one test (SK hynix vs SOXX) it added
   little, because the local market already prices the overnight move.
+- **Peer basket** (`sector=bac+c+wfc+gs+ms`): an equal-weight basket of close peers. Never use a
+  sector ETF that holds the stock itself as a large weight: in testing, XLF for JPMorgan absorbed
+  part of JPMorgan's own moves, re-explained a genuine stock event as "sector", and shrank the
+  normal range so trivial days were flagged. The page then labels the grey part "Market + sector".
 - **Constituent removal** (`exclude=<weight>@<date>`). When the stock is a large weight in its
   benchmark (rule of thumb: above ~10%), its own move contaminates the "market part". The
   weight is anchored on a sourced date and drifts with relative price; the market factor

@@ -54,6 +54,16 @@
     "date": "2026-04-20",
     "url": "https://app.samaya.ai/u/8dAHxzaXC13"
    }
+  },
+  {
+   "date": "2026-09-01",
+   "label": "John Ternus took over as CEO; Tim Cook became executive chair",
+   "source": {
+    "title": "Apple Inc. (AAPL) 8-K/A, Sep 01, 2026",
+    "source_name": "Filings",
+    "date": "2026-09-01",
+    "url": "https://app.samaya.ai/u/54jq0TDLF3S"
+   }
   }
  ],
  "events": [
@@ -65,20 +75,51 @@
    "category": "Product and demand",
    "tier": "reported",
    "release": null,
-   "summary": "Counterpoint data showed the iPhone 17 series outselling its predecessor by 14% in its first 10 days in the U.S. and China. The stock closed at a record high.",
+   "summary": "Counterpoint data showed the iPhone 17 series outselling the iPhone 16 by 14% in its first 10 days in the U.S. and China; a rating upgrade before the open added to the move. The stock closed at a record.",
+   "follow_on": "Same day: 1 upgrade, before the open.",
+   "sources": [
+    {
+     "title": "Top Midday Stories: Apple iPhone 17 Outsells Predecessor in US, China in First 10 Days",
+     "source_name": "News",
+     "date": "2025-10-20",
+     "url": "https://app.samaya.ai/u/cb5fCLg0baA"
+    },
+    {
+     "title": "US Equity Indexes Rise Amid Gains in Communication Services, Gold Scales New Peak",
+     "source_name": "News",
+     "date": "2025-10-20",
+     "url": "https://app.samaya.ai/u/holl7iHVa9Z"
+    },
+    {
+     "title": "Loop Capital Upgrades Apple to Buy From Hold, Adjusts Price Target to $315 From $226",
+     "source_name": "News",
+     "date": "2025-10-20",
+     "url": "https://app.samaya.ai/u/H0SF5c6Feo"
+    },
+    {
+     "title": "Wall Street Advances as Apple Hits Record High; Earnings Calendar in Focus",
+     "source_name": "News",
+     "date": "2025-10-20",
+     "url": "https://app.samaya.ai/u/j7cY5tnCFka"
+    }
+   ]
+  },
+  {
+   "dates": [
+    "2026-01-06"
+   ],
+   "label": "Fell while the market rose; no catalyst found",
+   "category": "Unattributed",
+   "tier": "none",
+   "release": null,
+   "summary": "No company release or news event in the window. The one rating change cited in coverage came on 2 Jan, two sessions earlier, so it cannot explain this move.",
    "follow_on": null,
    "sources": [
     {
-     "title": "iPhone 17 outsells predecessor by 14% in early China, US sales",
-     "source_name": "Web",
-     "date": "2025-10-20",
-     "url": "https://app.samaya.ai/u/dwI4foYCctr"
-    },
-    {
-     "title": "Apple's iPhone 17 outpaces predecessor with strong U.S. and China demand",
-     "source_name": "Web",
-     "date": "2025-10-20",
-     "url": "https://app.samaya.ai/u/7175jPkfKzR"
+     "title": "AAPL Company News, 5-6 Jan 2026 (searched)",
+     "source_name": "Market Data",
+     "date": "2026-01-06",
+     "url": "https://app.samaya.ai/u/cNMfcsEtV9s"
     }
    ]
   },
@@ -184,26 +225,57 @@
    "category": "Regulatory and legal",
    "tier": "reported",
    "release": null,
-   "summary": "The FTC chair sent a letter warning that Apple News may breach the FTC Act, and a report the day before said the revamped Siri was slipping beyond its March target.",
+   "summary": "The FTC chair sent a letter warning that Apple News may breach the FTC Act, and a report the day before said the revamped Siri could slip past its March target.",
    "follow_on": null,
    "sources": [
     {
-     "title": "Federal Trade Commission issues letter to Apple on Apple News",
-     "source_name": "Web",
-     "date": "2026-02-12",
-     "url": "https://app.samaya.ai/u/f6ofyufZVeq"
-    },
-    {
-     "title": "Apple's latest attempt to launch the new Siri runs into snags",
-     "source_name": "Web",
-     "date": "2026-02-11",
-     "url": "https://app.samaya.ai/u/5v27Afwviyp"
-    },
-    {
-     "title": "AAPL Company News, 11-12 Feb 2026",
+     "title": "Sector Update: Tech (FTC letter on Apple News)",
      "source_name": "News",
      "date": "2026-02-12",
-     "url": "https://app.samaya.ai/u/l0WGczPuiZI"
+     "url": "https://app.samaya.ai/u/7zfje6I4W9g"
+    },
+    {
+     "title": "US Equity Indexes Retreat as Broad-Based Risk-Off Sentiment Takes Hold",
+     "source_name": "News",
+     "date": "2026-02-12",
+     "url": "https://app.samaya.ai/u/f2HYJys2mLA"
+    },
+    {
+     "title": "AAPL Company News, 11-12 Feb 2026 (Siri delay report)",
+     "source_name": "Market Data",
+     "date": "2026-02-12",
+     "url": "https://app.samaya.ai/u/8rSlbKvTRlv"
+    }
+   ]
+  },
+  {
+   "dates": [
+    "2026-02-17"
+   ],
+   "label": "Report of three AI wearables in development",
+   "category": "Product and strategy",
+   "tier": "reported",
+   "release": null,
+   "summary": "Bloomberg reported during the session that Apple is ramping up development of AI-powered smart glasses, a pendant and AirPods. A bullish sell-side note that morning argued AI worries were overdone.",
+   "follow_on": null,
+   "sources": [
+    {
+     "title": "Market Chatter: Apple Ramps Up Development of AI-Powered Wearable Devices",
+     "source_name": "News",
+     "date": "2026-02-17",
+     "url": "https://app.samaya.ai/u/1c0ACn9kSNW"
+    },
+    {
+     "title": "Sector Update: Tech",
+     "source_name": "News",
+     "date": "2026-02-17",
+     "url": "https://app.samaya.ai/u/hKx6k5xBEE4"
+    },
+    {
+     "title": "Apple's Recent Sell-off, AI Worries Unwarranted, Wedbush Securities Says",
+     "source_name": "News",
+     "date": "2026-02-17",
+     "url": "https://app.samaya.ai/u/6mFUQYGePUg"
     }
    ]
   },
@@ -220,16 +292,22 @@
    "follow_on": null,
    "sources": [
     {
+     "title": "AAPL - Company Press Releases (2026-04-29 to 2026-05-01)",
+     "source_name": "Market Data (press release feed)",
+     "date": "2026-04-30",
+     "url": "https://app.samaya.ai/u/hb89J21DoUn"
+    },
+    {
+     "title": "Apple reports second quarter results",
+     "source_name": "Press Releases",
+     "date": "2026-04-30",
+     "url": "https://app.samaya.ai/u/4lVelsTWgHB"
+    },
+    {
      "title": "Apple Inc. (AAPL) 8-K, Apr 30, 2026",
      "source_name": "Filings",
      "date": "2026-04-30",
      "url": "https://app.samaya.ai/u/hikWlhFfJRm"
-    },
-    {
-     "title": "Apple reports second quarter results (timestamped copy)",
-     "source_name": "Press Releases (web copy, timestamped)",
-     "date": "2026-04-30",
-     "url": "https://app.samaya.ai/u/9Degwkmaj4X"
     },
     {
      "title": "Apple Inc., Q1 2026 Earnings Call: March-quarter guide",
@@ -253,6 +331,38 @@
   },
   {
    "dates": [
+    "2026-06-09"
+   ],
+   "label": "Sold off after WWDC; EU Siri AI launch delayed",
+   "category": "Product and strategy",
+   "tier": "reported",
+   "release": null,
+   "summary": "Apple unveiled Siri AI at its developer conference on 8 Jun but said the EU launch would be delayed; the stock fell the next session as notes called AI gains gradual.",
+   "follow_on": null,
+   "timing": "Keynote the prior session",
+   "sources": [
+    {
+     "title": "Top Midday Stories: Apple Introduces Siri AI, But EU Launch to be Delayed",
+     "source_name": "News",
+     "date": "2026-06-09",
+     "url": "https://app.samaya.ai/u/bIHHa1O7ZIF"
+    },
+    {
+     "title": "WWDC26: Apple unveils next generation of Apple Intelligence, Siri AI",
+     "source_name": "Press Releases",
+     "date": "2026-06-08",
+     "url": "https://app.samaya.ai/u/2na3Q8AMowK"
+    },
+    {
+     "title": "Apple's WWDC 2026 Event Shows 'Clearer' Paths to Monetizing AI, Morgan Stanley Says",
+     "source_name": "News",
+     "date": "2026-06-09",
+     "url": "https://app.samaya.ai/u/7qnKIFDt6WW"
+    }
+   ]
+  },
+  {
+   "dates": [
     "2026-06-25"
    ],
    "label": "Raised Mac and iPad prices to offset memory costs",
@@ -263,22 +373,131 @@
    "follow_on": null,
    "sources": [
     {
-     "title": "Apple raises prices of MacBooks, iPads as memory costs skyrocket",
-     "source_name": "Web",
-     "date": "2026-06-25",
-     "url": "https://app.samaya.ai/u/ln52xX41LDj"
-    },
-    {
-     "title": "Apple just increased prices on MacBooks, iPads, and more",
-     "source_name": "Web",
-     "date": "2026-06-25",
-     "url": "https://app.samaya.ai/u/JmERxxhvZj"
-    },
-    {
-     "title": "AAPL Company News, 24-25 Jun 2026",
+     "title": "Apple Reportedly Raises Prices on MacBooks, iPads",
      "source_name": "News",
      "date": "2026-06-25",
-     "url": "https://app.samaya.ai/u/6Zxp73yuhuS"
+     "url": "https://app.samaya.ai/u/fakunfiogJ9"
+    },
+    {
+     "title": "Apple Doesn't Risk Customer Churn Following Price Increases, Wedbush Says",
+     "source_name": "News",
+     "date": "2026-06-25",
+     "url": "https://app.samaya.ai/u/1clkoDFOhKD"
+    },
+    {
+     "title": "Update: Nasdaq Extends Losing Streak; Apple Plunges After Price Hikes",
+     "source_name": "News",
+     "date": "2026-06-25",
+     "url": "https://app.samaya.ai/u/dzGqyLPdddO"
+    }
+   ]
+  },
+  {
+   "dates": [
+    "2026-06-26"
+   ],
+   "label": "Partial rebound as sell-side notes played down the margin hit",
+   "category": "Sell-side commentary",
+   "tier": "reported",
+   "release": null,
+   "summary": "No company release. Two sell-side notes during the session argued the Mac and iPad price increases would not change Apple's near-term margin outlook. Russell reconstitution inflated volume.",
+   "follow_on": null,
+   "sources": [
+    {
+     "title": "Apple's Near-Term Margin Outlook Unlikely to Change From Macs and iPads, UBS Says",
+     "source_name": "News",
+     "date": "2026-06-26",
+     "url": "https://app.samaya.ai/u/kwD0EPCXO3k"
+    },
+    {
+     "title": "Apple's Mac, iPad Price Hikes Won't Change Product Margin Outlook, UBS Says",
+     "source_name": "News",
+     "date": "2026-06-26",
+     "url": "https://app.samaya.ai/u/5uhzQAGM71w"
+    }
+   ]
+  },
+  {
+   "dates": [
+    "2026-07-02"
+   ],
+   "label": "Report of five new iPhones and more foldables",
+   "category": "Product and demand",
+   "tier": "reported",
+   "release": null,
+   "summary": "Nikkei Asia reported before the open that Apple plans at least five new iPhone models through early 2027 and raised its foldable production target to about 10 million units.",
+   "follow_on": null,
+   "sources": [
+    {
+     "title": "Market Chatter: Apple Plans Five New iPhone Models",
+     "source_name": "News",
+     "date": "2026-07-02",
+     "url": "https://app.samaya.ai/u/h250wIWJic6"
+    },
+    {
+     "title": "Update: Dow Rises to Record as Wall Street Logs Weekly Gains",
+     "source_name": "News",
+     "date": "2026-07-02",
+     "url": "https://app.samaya.ai/u/acxsZ6AlU4d"
+    },
+    {
+     "title": "Apple to launch 5 new iPhone models to gain market share amid memory crunch - Nikkei Asia",
+     "source_name": "Web",
+     "date": "2026-07-02",
+     "url": "https://app.samaya.ai/u/1LI0JOPI1Ni",
+     "publisher": "Nikkei Asia",
+     "kind": "original_report",
+     "evidence": "Apple is planning an ambitious iPhone launch for the second half of this year and first half of 2027 with at least five new models"
+    }
+   ]
+  },
+  {
+   "dates": [
+    "2026-07-15"
+   ],
+   "label": "China approves Apple Intelligence; AI chip-deal report",
+   "category": "Regulatory and legal",
+   "tier": "reported",
+   "release": null,
+   "summary": "China's cyberspace regulator approved Apple Intelligence, using Alibaba's Qwen models, that morning. The Information separately reported Apple had held talks about buying AI chip companies.",
+   "follow_on": null,
+   "sources": [
+    {
+     "title": "Apple, Inc.: Apple Intelligence - Coming Soon to China?",
+     "source_name": "Research Reports",
+     "date": "2026-07-15",
+     "url": "https://app.samaya.ai/u/6hVrG3RFSC2"
+    },
+    {
+     "title": "Market Chatter: Apple Exploring Chip Company Acquisitions",
+     "source_name": "News",
+     "date": "2026-07-15",
+     "url": "https://app.samaya.ai/u/2AVKCXzb84f"
+    },
+    {
+     "title": "AAPL Company News, 14-15 Jul 2026",
+     "source_name": "Market Data",
+     "date": "2026-07-15",
+     "url": "https://app.samaya.ai/u/de3kc9cOE9m"
+    }
+   ]
+  },
+  {
+   "dates": [
+    "2026-07-24"
+   ],
+   "label": "Rose with no identified cause",
+   "category": "Unattributed",
+   "tier": "none",
+   "release": null,
+   "summary": "No company release or credible report in the window explains the move; the only items were pre-results price-target changes.",
+   "follow_on": null,
+   "sources": [
+    {
+     "title": "Baird Raises Apple Price Target to $330 From $310 (searched)",
+     "source_name": "News",
+     "date": "2026-07-23",
+     "url": "https://app.samaya.ai/u/KMuKMtd8Db"
     }
    ]
   },
@@ -319,10 +538,36 @@
      "url": "https://app.samaya.ai/u/hbkbtwPS3pV"
     }
    ]
+  },
+  {
+   "dates": [
+    "2026-09-10"
+   ],
+   "label": "iPhone Duo and iPhone 18 Pro launch",
+   "category": "Product and demand",
+   "tier": "reported",
+   "release": null,
+   "summary": "Apple unveiled its first foldable, the iPhone Duo, at $1,999 on 9 Sep, below the $2,300-2,500 investors had expected per a sell-side report; the stock rose the next session.",
+   "follow_on": null,
+   "sources": [
+    {
+     "title": "Apple unveils iPhone Duo",
+     "source_name": "Press Releases",
+     "date": "2026-09-09",
+     "url": "https://app.samaya.ai/u/8sZoPhA3Vpk"
+    },
+    {
+     "title": "Apple, Inc.: The Ternus Era Begins - Premiumization, Innovation, and a Healthy Dose of AI",
+     "source_name": "Research Reports",
+     "date": "2026-09-10",
+     "url": "https://app.samaya.ai/u/gk4PmQgIAKU"
+    }
+   ]
   }
  ],
+ "runs": [],
  "story": {
-  "headline": "Apple's 37% gain came on quiet days: its nine flagged sessions netted a 6% loss, even as two quarters beat guidance.",
+  "headline": "Apple gained 37% as two quarters beat guidance; most of it came between news days, including the rally into the iPhone Duo launch.",
   "chapters": [
    {
     "from": "2025-10-16",
@@ -331,6 +576,7 @@
     "text": "Early iPhone 17 data lifted the stock to a record; by 20 Jan it had round-tripped.",
     "event_dates": [
      "2025-10-20",
+     "2026-01-06",
      "2026-01-20"
     ]
    },
@@ -344,25 +590,53 @@
      "2026-02-02",
      "2026-02-04",
      "2026-02-12",
+     "2026-02-17",
      "2026-05-01"
     ]
    },
    {
     "from": "2026-06-02",
     "to": "2026-08-12",
-    "title": "Memory costs catch up",
-    "text": "Price hikes and a 9-11% September-quarter guide cost 13%; quiet-day gains in July offset most of it.",
+    "title": "Memory costs versus new catalysts",
+    "text": "Price hikes, a post-WWDC sell-off and a 9-11% guide hit; iPhone and China AI reports lifted July.",
     "event_dates": [
+     "2026-06-09",
      "2026-06-25",
+     "2026-06-26",
+     "2026-07-02",
+     "2026-07-15",
+     "2026-07-24",
      "2026-07-31"
     ]
    },
    {
     "from": "2026-08-12",
     "to": "2026-10-15",
-    "title": "A record on quiet days",
-    "text": "No flagged sessions: the stock rose to a record close with the market part roughly flat.",
-    "event_dates": []
+    "title": "A record into the iPhone Duo",
+    "text": "iPhone Duo launched 9 Sep below expected pricing; the next session and steady gains lifted it 13%.",
+    "event_dates": [
+     "2026-09-10"
+    ],
+    "context_sources": [
+     {
+      "title": "Apple unveils iPhone Duo",
+      "source_name": "Press Releases",
+      "date": "2026-09-09",
+      "url": "https://app.samaya.ai/u/8sZoPhA3Vpk"
+     },
+     {
+      "title": "Apple, Inc.: The Ternus Era Begins - Premiumization, Innovation, and a Healthy Dose of AI",
+      "source_name": "Research Reports",
+      "date": "2026-09-10",
+      "url": "https://app.samaya.ai/u/gk4PmQgIAKU"
+     },
+     {
+      "title": "Apple Schedules Significant Product Launch Event for Sept. 9",
+      "source_name": "News",
+      "date": "2026-08-26",
+      "url": "https://app.samaya.ai/u/4BSfRdUB8rI"
+     }
+    ]
    }
   ]
  }

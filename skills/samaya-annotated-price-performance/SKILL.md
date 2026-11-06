@@ -2,12 +2,16 @@
 name: samaya-annotated-price-performance
 description: >-
   "annotated price chart", "what moved the stock", "price performance with catalysts", "label the
-  chart with the news" — an interactive HTML price and volume chart for one stock that flags every
-  day it moved beyond the market, sources each move through Samaya (results vs company guidance,
-  news, rating changes) and states the takeaway. Not for valuation, peer comps or insider trades.
+  chart with the news" — for meeting, pitch or position-review prep: an interactive price-volume
+  chart for one stock, split into periods, each big move and run labelled with the news that
+  drove it, sourced via Samaya. Not for price alerts (samaya-trigger-price-move), co-moves
+  (samaya-correlation-analysis) or insider trades.
 ---
 
 # Annotated price performance
+
+**What it includes:** an interactive price chart split into periods, each big move labelled with
+the news or event that drove it, with sources.
 
 Produces one self-contained interactive HTML page for one stock over a window (default: the
 trailing 12 months to the last close):
@@ -49,17 +53,40 @@ shift is unambiguous. If it blocks, stop and tell the person what failed; never 
 State any repair or gap on the page.
 
 **3. Screen.** `python3 scripts/compute.py <stock> <bench> <start> <end> clean out.json clean=1`
-(add `sector=`, `exclude=` options only per `data-pulls.md` section 6). A day is flagged when its
-stock-specific move is at least 2.5x the stock's normal daily variation on at least 1.75x median
-volume, or at least 4x on any volume. Volume on index-mechanics days (quarterly expiry, Russell
-reconstitution) does not count. There is no cap.
+(add `sector=`, `exclude=` options only per `data-pulls.md` section 6). It grades every day on a
+signal ladder, from the stock-specific move (z = move beyond what beta x benchmark explains,
+divided by the stock's normal daily variation) and volume:
 
-**4. Research every flagged day.** Follow `references/attribution.md`: company releases first,
-news in 1 to 2 day windows, the timing rule (a release after the close moves the next session),
-tiers `confirmed` / `reported` / `none`, beat or miss against the company's own guidance from
-transcripts or 8-Ks (never consensus), rating changes as same-day reactions in counts. Also
-collect results releases with times, and context events (results days, management changes,
-large M&A) that did not clear the screen.
+| Signal | Rule | Treatment |
+|---|---|---|
+| `strong` | z >= 2.5 on volume >= 1.75x the 50-day median, not an index-mechanics day | Callout, researched |
+| `price` | z >= 3.0 on any volume (mega-caps rarely spike volume on news) | Smaller callout, "on normal volume", researched |
+| `rank` | Among the window's largest stock-specific moves, about 10 per year scaled to the window (z >= 2) | Callout, researched (top-move guarantee) |
+| volume-only | Volume >= 2x with z < 1.5 | Listed, never researched or storied |
+| `run` | 10-session cumulative z >= 2.5 with no flagged day inside | Hatched, clickable band with its own panel and legend entry, researched as one window |
+
+Volume on quarterly-expiry and Russell-reconstitution days cannot make a day `strong`. There is
+no cap.
+
+**4. Research every flagged day, run and drift phase.** Follow `references/attribution.md`. Go
+down the source ladder and stop at the first rung that explains the move: company releases and
+filings, then news asked as "Why did <company> (<ticker>) stock move <x%> on <date>?", then Web
+results that report an event (not the move) from an attributable publisher, never a "why it
+moved" explainer, then X posts dated that session as a last resort (tier `social`: context, not a confirmed cause).
+Never use Reddit: its posts carry no date. One credible original report with no second source
+is tier `reported` with `single_source: true` (shown as "single source"); a relayed copy never
+counts as a second source. Any phase whose unflagged sessions add up to more than an 8%
+stock-specific move must be researched as a window (`context_sources`); the render blocks
+otherwise. Apply the timing rule (a release after the close
+moves the next session). Measure beat or miss against the company's own guidance from
+transcripts or 8-Ks, never consensus. Treat rating changes as same-day reactions, in counts.
+Also collect results releases with times, and context events (results days, management
+changes, large M&A) that did not clear the screen.
+
+Everything flagged is researched; the page decides how loudly to show it. Numbered markers go to
+the moves that account for 75% of flagged stock-specific movement, plus every results reaction and
+the three largest moves; the rest are small numbered circles on the price line with the same panel. Markers
+cluster only when they would overflow the screen's row budget, and never the results or top three.
 
 **5. Write `events.json`.** Schema and limits in `references/events-schema.md`; a complete
 worked example is `references/example-events-aapl.json`.
@@ -74,7 +101,9 @@ narrative.
 assets/template.html <out>.html`. It writes nothing if any gate fails (list in
 `events-schema.md` section 4). Fix the data or the wording, never the validator.
 
-**8. Check and deliver.** If a headless browser is available, open the page at desktop and
+**8. Audit, check and deliver.** Run `python3 scripts/coverage_check.py out.json events.json`: it checks the page against the raw data (the window's largest raw and stock-specific moves covered, as many as the scaled top-move guarantee, no unresearched drift phase) and must report PASS or have each issue explained.
+
+**Then check and deliver.** If a headless browser is available, open the page at desktop and
 mobile widths, confirm no script errors, and look at it. Deliver the single HTML file through
 the environment's publishing or file mechanism; it loads its fonts from Google Fonts and runs
 nothing else externally.
@@ -90,6 +119,9 @@ nothing else externally.
 - Every source names the actual document or feed and links the exact Samaya URL returned;
   Samaya is the routing layer, not the source.
 - Unexplained large moves are shown, labelled "No catalyst found", not hidden or explained away.
+- X posts are the last source and never a confirmed cause; Reddit is never used.
+- A phase that rose or fell on unflagged days is researched as a window, never described as
+  "quiet days" by default.
 - Market-driven large moves get no story; they are listed with their split.
 - Name the benchmark everywhere the split is shown.
 - No model or vendor name as an author anywhere in the output.

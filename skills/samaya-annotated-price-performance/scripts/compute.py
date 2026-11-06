@@ -3,7 +3,8 @@
 
 Usage: compute.py <ticker> <bench> <window_start> <window_end> <data_dir> <out.json> [opts]
   opts: clean=1                     read <data_dir>/<ticker>_clean.txt and <bench>_clean.txt (integrity.py output)
-        sector=<prefix> sector_raw=<dir> sector_lag=prior|same   optional sector factor (prior = foreign
+        sector=<prefix>[+<prefix>...] sector_raw=<dir> sector_lag=prior|same   optional sector/peer factor:
+                                    one ETF, or an equal-weight peer basket "a+b+c" (prior = foreign
                                     session that closed before this market opened, e.g. US semis for Seoul)
         exclude=<weight>@<date>     constituent removal when the stock is a large benchmark weight
         calendar=us|none            mechanical-volume calendar (quarterly expiry, Russell reconstitution)
@@ -14,10 +15,13 @@ benchmark rows may be 'date close' or the full candle form.
 """
 import glob, json, math, re, statistics, sys
 
-Z_MIN = 2.5        # abnormal-return z-score threshold
-RVOL_MIN = 1.75    # relative-volume gate for mid-size moves (vs trailing 50-session median)
-Z_ALWAYS = 4.0     # abnormal moves this large qualify regardless of volume
-CAP = 10_000       # no cap: the thresholds decide; every candidate is researched and shown
+# Signal ladder. z = stock-specific move / the stock's normal daily variation.
+Z_MIN = 2.5        # tier 1 "strong": z >= Z_MIN on heavy volume (non-mechanical day)
+RVOL_MIN = 1.75    #   heavy volume = this multiple of the trailing 50-session median
+Z_PRICE = 3.0      # tier 2 "price-only": z >= Z_PRICE on any volume (mega-caps rarely spike volume on news)
+VOL_ONLY = 2.0     # tier 3 "volume-only": rvol >= this with |z| < 1.5 -> listed, never researched or storied
+TOP_N_PER_YEAR = 10  # top-move guarantee: ~10 largest stock-specific moves per 252 sessions (min 5), if z >= 2
+RUN_LEN = 10       # tier 4 "run": RUN_LEN-session cumulative stock-specific move on unflagged sessions, z >= Z_MIN
 EST_WIN = 60       # trailing window for beta and residual sigma
 VOL_WIN = 50       # trailing window for average volume
 ZIGZAG = 0.20      # turning-point reversal threshold
@@ -133,7 +137,13 @@ def main():
     else:
         s, s_src = load(tk, data_dir, True)
         b, b_src = load(bk, data_dir, False)
-    sec, sec_src = (load(opts["sector"], opts.get("sector_raw", data_dir), False) if opts.get("sector") else ({}, []))
+    sec, sec_src = {}, []
+    if opts.get("sector"):  # one series (an ETF) or an equal-weight basket "a+b+c"
+        parts = [load(p_, opts.get("sector_raw", data_dir), False) for p_ in opts["sector"].split("+")]
+        common = sorted(set.intersection(*[set(r_) for r_, _ in parts]))
+        base = [r_[common[0]]["c"] for r_, _ in parts]
+        sec = {d: {"c": sum(r_[d]["c"] / b for (r_, _), b in zip(parts, base)) / len(parts)} for d in common}
+        sec_src = [x for _, src in parts for x in src]
 
     # Continuity: the two calendars must match exactly; a missing session blocks.
     ds, db = set(s), set(b)
@@ -208,15 +218,44 @@ def main():
 
     mech = us_mechanical_days([d["date"] for d in days]) if opts.get("calendar", "us") == "us" else {}
     for d in days: d["mech"] = mech.get(d["date"])
-    # on mechanical days volume is index-driven, so only the price-only path can flag them
-    cands = [d for d in days if abs(d["z"]) >= Z_ALWAYS or (abs(d["z"]) >= Z_MIN and (d["rvol"] or 0) >= RVOL_MIN and not d["mech"])]
-    cands.sort(key=lambda d: -abs(d["abn"]))
-    events = sorted(cands[:CAP], key=lambda d: d["date"])
-    over_cap = [d["date"] for d in cands[CAP:]]
+    # tier 1 needs heavy volume on a non-mechanical day; tier 2 needs a larger move on any volume
+    for d in days:
+        strong = abs(d["z"]) >= Z_MIN and (d["rvol"] or 0) >= RVOL_MIN and not d["mech"]
+        d["signal"] = "strong" if strong else ("price" if abs(d["z"]) >= Z_PRICE else None)
+    # top-move guarantee: the window's largest stock-specific moves are always researched
+    top_n = int(opts.get("top_n", max(5, round(TOP_N_PER_YEAR * len(days) / 252))))
+    # both rankings: the largest moves versus the market AND the largest price moves (a big price
+    # day that is partly market-driven is still one a reader will ask about)
+    for key in ("abn", "ret"):
+        for d in sorted(days, key=lambda x: -abs(x[key]))[:top_n]:
+            if not d["signal"] and abs(d["z"]) >= 2.0:
+                d["signal"] = "rank"
+    cands = [d for d in days if d["signal"]]
+    events = sorted(cands, key=lambda d: d["date"])
+    flagged = {d["date"] for d in cands}
+    # tier 4: multi-session runs the single-day screen cannot see (slow rallies and slides)
+    hits = []
+    for i in range(RUN_LEN - 1, len(days)):
+        w = days[i - RUN_LEN + 1:i + 1]
+        # measured on the unflagged sessions only: a flagged day inside the window is explained on its
+        # own, and must not erase the slower move around it (at least half the window unflagged)
+        un = [x for x in w if x["date"] not in flagged]
+        if len(un) < RUN_LEN // 2:
+            continue
+        cum = sum(x["abn"] for x in un); sd = math.sqrt(sum(x["sigma"] ** 2 for x in un))
+        if sd and abs(cum / sd) >= Z_MIN:
+            hits.append({"start": w[0]["date"], "end": w[-1]["date"], "abn": cum, "z": cum / sd})
+    runs = []
+    for h in hits:  # merge overlapping windows with the same direction; keep the strongest
+        if runs and h["start"] <= runs[-1]["end"] and (h["abn"] > 0) == (runs[-1]["abn"] > 0):
+            r_ = runs[-1]; r_["end"] = h["end"]
+            if abs(h["z"]) > abs(r_["z"]): r_["abn"], r_["z"] = h["abn"], h["z"]
+        else:
+            runs.append(dict(h))
     # Days that moved a lot but the market explains it: shown as context only.
     mkt = [d["date"] for d in days if abs(d["ret"]) >= 2.5 * d["sigma"] and abs(d["z"]) < Z_MIN]
-    # Heavy-volume days with no abnormal move: candidates for mechanical causes.
-    vol_only = [d["date"] for d in days if (d["rvol"] or 0) >= 2.5 and abs(d["z"]) < Z_MIN]
+    # tier 3: heavy volume, little stock-specific move. Listed, never researched or storied.
+    vol_only = [{"date": d["date"], "rvol": d["rvol"], "mech": d["mech"]} for d in days if (d["rvol"] or 0) >= VOL_ONLY and abs(d["z"]) < 1.5]
     mech_vol = [{"date": d["date"], "label": d["mech"], "rvol": d["rvol"]} for d in days if d["mech"] and (d["rvol"] or 0) >= 1.75]
 
     win_c = [d["c"] for d in days]
@@ -233,7 +272,7 @@ def main():
     res = {
         "ticker": tk, "benchmark": bk, "window": [days[0]["date"], days[-1]["date"]],
         "base_close": base, "base_date": dates[first_win - 1],
-        "params": {"z_min": Z_MIN, "z_always": Z_ALWAYS, "rvol_min": RVOL_MIN, "cap": CAP, "est_win": EST_WIN,
+        "params": {"z_min": Z_MIN, "z_price": Z_PRICE, "top_n": top_n, "rvol_min": RVOL_MIN, "vol_only": VOL_ONLY, "run_len": RUN_LEN, "est_win": EST_WIN,
                    "vol_win": VOL_WIN, "zigzag": round(zz, 3)},
         "sources": {"stock": s_src, "bench": b_src, "sector": sec_src},
         "exclude": opts.get("exclude"), "weight_path": {"start": wpath[dates.index(ws) if ws in dates else 0] if wpath else None,
@@ -244,8 +283,8 @@ def main():
                     "hi": max(win_c), "lo": min(win_c)},
         "days": days,
         "event_days": [{k: e[k] for k in ("date", "ret", "bench_ret", "abn", "z", "rvol", "v", "c")} for e in events],
-        "candidates": [{k: c[k] for k in ("date", "ret", "bench_ret", "abn", "z", "rvol")} for c in sorted(cands, key=lambda d: d["date"])],
-        "over_cap": over_cap, "market_days": mkt, "volume_only_days": vol_only,
+        "candidates": [{k: c[k] for k in ("date", "ret", "bench_ret", "abn", "z", "rvol", "signal")} for c in events],
+        "runs": runs, "market_days": mkt, "volume_only_days": vol_only,
         "mechanical_days": mech_vol,
         "turning_points": zigzag([d["date"] for d in days], win_c, zz),
     }
@@ -255,10 +294,10 @@ def main():
     print(f"event days {len(events)} -> {ev_comp:+.1%}; other sessions {other_comp:+.1%}")
     for e in events:
         print(f"  {e['date']}  ret {e['ret']:+.1%}  mkt part {e['beta']*e['bench_ret']:+.1%}  sector part {e['sec_part']:+.1%}  abn {e['abn']:+.1%}  "
-              f"z {e['z']:+.1f}  rvol {(e['rvol'] or 0):.1f}x")
-    print("over cap:", over_cap)
+              f"z {e['z']:+.1f}  rvol {(e['rvol'] or 0):.1f}x  [{e['signal']}]")
+    print("runs:", [(r_["start"], r_["end"], f"{r_['abn']:+.1%}", round(r_["z"], 1)) for r_ in runs])
     print("market-explained days:", mkt)
-    print("volume-only days:", vol_only)
+    print("volume-only days:", [(v["date"], round(v["rvol"], 1), v["mech"] or "") for v in vol_only])
     print("mechanical heavy-volume days:", [(m["date"], m["label"][:20], round(m["rvol"], 1)) for m in mech_vol]); print("zigzag", round(zz, 3))
     print("turning points:", [(t["date"], t["kind"], t["close"]) for t in res["turning_points"]])
 

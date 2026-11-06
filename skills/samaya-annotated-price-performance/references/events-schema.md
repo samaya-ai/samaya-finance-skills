@@ -1,7 +1,8 @@
 # events.json: the one file the model writes
 
-Everything else on the page is computed. A full worked example (AAPL, 12 months) is in
-`example-events-aapl.json`; copy its shape.
+Everything else on the page is computed. A worked example (AAPL, 12 months) is in
+`example-events-aapl.json`; copy its shape. It matches the current screen (14 flagged days, no
+runs) and includes a Web source recorded with publisher, kind and evidence.
 
 ## Contents
 1. Top-level fields
@@ -21,22 +22,24 @@ Everything else on the page is computed. A full worked example (AAPL, 12 months)
 | `after_hours_days` | Release days whose daily volume includes after-hours trading on the release |
 | `context_events` | Major events that did not clear the screen: `{date (reaction session), label, source{title, source_name, date, url}}` |
 | `events` | One entry per flagged day (or merged run of days), in date order |
+| `runs` | One entry per run in `compute.py` output: `{start, end, label, tier, summary, sources}` (same tiers as events) |
 | `story` | Headline and phases (section 3) |
 
 ## 2. Event fields
 
 | Field | Rule |
 |---|---|
-| `dates` | Screened dates only. Adjacent flagged days (within 3 sessions) with the same cause may merge into one event |
+| `dates` | Screened dates only (signal `strong` or `price`; the page draws price-only days slightly smaller and notes "on normal volume"). Adjacent flagged days (within 3 sessions) with the same cause may merge into one event |
 | `label` | What happened, at most 64 characters, no figures that are not in the summary |
 | `category` | See `attribution.md` section 4 |
-| `tier` | `confirmed`, `reported` or `none` |
+| `tier` | `confirmed`, `reported`, `social` or `none` (see `attribution.md` section 3) |
+| `single_source` | Optional, `reported` only: true when one credible original report is the only source |
 | `release` | `"YYYY-MM-DD HH:MM"` for `confirmed` (must map to `dates[0]` under the timing rule); date only or null otherwise |
 | `timing` | Optional short note shown as a chip, e.g. "Release time not in feed" |
 | `guidance_check` | Results days: actual vs the company's own guide |
 | `summary` | At most 40 words, plain facts with their figures; no forecasts, no recommendations |
 | `follow_on` | Same-day rating/target changes as counts, or null |
-| `sources` | `{title, source_name, date, url}`; company sources first. `none` events cite the searched news window |
+| `sources` | `{title, source_name, date, url}`; Web sources add `publisher`, `kind`, `evidence` (`attribution.md` 3b); company sources first. `none` events cite the searched news window |
 
 ## 3. Story fields
 
@@ -72,11 +75,14 @@ The render refuses to write the page if any of these fail:
 
 | Gate | Blocks when |
 |---|---|
-| Completeness | A screened day has no event, or an event sits on a day the screen did not flag |
+| Completeness | A screened day or run has no entry, or an event sits on a day the screen did not flag |
+| Web sources | Missing publisher/kind/evidence, publisher not in the title or byline, a blocklisted publisher, hedged evidence, an explainer headline carrying the tier alone, or a Web-only story without a primary document or two publishers |
+| Social sources | Any Reddit source; a `confirmed`/`reported` tier resting only on social posts; a `social` tier without an X post dated that session or the one before |
 | Results coverage | A flagged results reaction is not a callout, or a release time maps to a different session |
 | Confirmed tier | No company source, no timestamped release, or the release cannot explain `dates[0]` |
 | URLs | Any URL is malformed or absent from `urls_seen.txt` |
 | Visible text | A broker name, consensus/estimate language, an internal id, a label over 64 characters or a summary over 40 words |
+| Phase drift | A phase's unflagged sessions add up to more than an 8% stock-specific move and it has no `context_sources` or run |
 | Story shape | Headline over 24 words, a title over 6 words, a tile line over 18 words, more than 5 phases, phases that do not tile the window, or a disallowed boundary |
 | Story citations | A phase with flagged days that cites none of them, or cites an event outside its dates |
 | Story figures | Any percentage or dollar figure that matches neither a computed number (within rounding) nor a cited event's label, summary or guidance check |
@@ -86,7 +92,16 @@ The render refuses to write the page if any of these fail:
 Density is a warning, not a block: above 1.5 events a month the render suggests raising the
 screen thresholds.
 
-## 5. Fixing a BLOCK
+## 5. How the page shows events (computed, nothing to write)
+
+Every event is researched and listed in the table. On the chart, numbered markers go to the
+smallest set of events covering 75% of flagged stock-specific movement, plus every results
+reaction and the three largest moves (anchors); the rest are small numbered circles on the price line
+that open the same panel. Markers stack into rows; only when the stack would exceed the screen's row budget
+(3 rows on desktop, 2 on a phone) do the densest non-anchor markers collapse into a badge that
+expands on click. The proportions scale with the data; no count is fixed.
+
+## 6. Fixing a BLOCK
 
 Fix the data or the wording, never the validator. A figure that "doesn't match" usually means
 the prose rounded differently or quoted a number that is not on the page; either cite the event

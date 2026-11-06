@@ -84,6 +84,12 @@ h1 { font-size: clamp(22px, 3.1vw, 32px); line-height: 1.18; font-weight: 640; l
 .legend span { display: inline-flex; align-items: center; gap: 6px; }
 .dot { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
 .dot.c { background: var(--ink-soft); } .dot.r { background: var(--surface); border: 2px solid var(--ink-soft); }
+.dot.sm { width: 8px; height: 8px; border: 1.8px solid var(--ink-soft); background: var(--surface); }
+.mk.cl { cursor: pointer; }
+.sw-run { display: inline-block; width: 14px; height: 10px; margin-right: 5px; vertical-align: -1px; border: 1px dashed var(--ink-soft); background: repeating-linear-gradient(45deg, var(--ink-soft) 0 1px, transparent 1px 4px); opacity: .8; }
+.runband { cursor: pointer; }
+.runband:hover rect { opacity: .9; }
+.dot.x { background: var(--surface); border: 2px dotted var(--ink-soft); }
 .dot.u { background: var(--surface); border: 1.5px dashed var(--none); }
 
 .main { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 24px; align-items: start; }
@@ -194,7 +200,7 @@ details.more[open] summary { margin-bottom: 10px; }
 
   <div class="bar">
     <div class="seg" role="group" aria-label="View"><button type="button" data-view="price" aria-pressed="true">Price</button><button type="button" data-view="daily" aria-pressed="false">Daily split</button><button type="button" data-view="rel" aria-pressed="false">Cumulative split</button></div>
-    <div class="legend" aria-hidden="true"><span><i class="dot c"></i>Confirmed</span><span><i class="dot r"></i>Reported</span><span><i class="dot u"></i>No catalyst</span></div>
+    <div class="legend" aria-hidden="true"><span><i class="dot c"></i>Confirmed</span><span><i class="dot r"></i>Reported</span><span><i class="dot x"></i>X context</span><span><i class="dot u"></i>No catalyst</span><span title="Smaller flagged moves are dots on the price line; click one for the same detail as a marker."><i class="dot sm"></i>Smaller move</span><span title="A stretch of about two weeks where the stock moved well beyond the market without any single day standing out. Click a band for details."><i class="sw-run"></i>Run: multi-day move</span></div>
     <details class="opts"><summary>Display</summary><div class="opts-in">
       <label><input type="checkbox" id="optBench" checked> <span id="benchLbl">Normal-range band</span></label>
       <label><input type="checkbox" id="optMkt" checked> Market-driven days</label>
@@ -240,7 +246,7 @@ const idxOf = {}; days.forEach((d, i) => idxOf[d.date] = i);
 const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const mkSet = new Set(MK.map(m => m.date));
 const ctxOf = {}; (D.context_events || []).forEach(c => ctxOf[c.date] = c.label);
-let view = "price", sel = null;
+let view = "price", sel = null, selRun = null, clusters = [], expanded = new Set();
 
 // cumulative split: stock-specific (product of 1 + market-adjusted move) and market-explained (product of 1 + beta x benchmark)
 const specCum = [], mktCum = []; let a = 1, b = 1;
@@ -269,10 +275,27 @@ function draw() {
   const X = i => x0 + (x1 - x0) * (i + 0.5) / N, bw = Math.max(1, (x1 - x0) / N * 0.72);
   // marker size follows the stock-specific move; markers stack onto another row rather than touch
   const rMin = narrow ? 7 : 8, rMax = narrow ? 11 : 13.5;
-  const R = e => rMin + (rMax - rMin) * Math.sqrt(Math.abs(e.abn) / maxAbn);
+  const R = e => (rMin + (rMax - rMin) * Math.sqrt(Math.abs(e.abn) / maxAbn)) * (e.signal === "price" ? 0.82 : 1);
   const rowH = rMax * 2 + 4, slots = {}, lastEdge = [];
-  EV.forEach((e, k) => { if (!visible(e)) return; const xm = (X(idxOf[e.dates[0]]) + X(idxOf[e.dates[e.dates.length - 1]])) / 2, r = R(e);
-    let row = 0; while (lastEdge[row] != null && xm - r < lastEdge[row] + 3) row++; lastEdge[row] = xm + r; slots[k] = { xm, row, r }; });
+  const xmOf = k => (X(idxOf[EV[k].dates[0]]) + X(idxOf[EV[k].dates[EV[k].dates.length - 1]])) / 2;
+  // numbered markers only for prominent events. They stack into rows; clusters are used only when the stack
+  // would overflow the screen's row budget, collapsing the densest run of colliding markers until it fits.
+  const prom = EV.map((e, k) => k).filter(k => visible(EV[k]) && EV[k].prominent !== false).sort((a, b) => xmOf(a) - xmOf(b));
+  const maxRows = narrow ? 2 : 3;
+  const layout = cl => { const hid = new Set(cl.flat()), sl = {}, edge = [];
+    const put = (key, xm, r) => { let row = 0; while (edge[row] != null && xm - r < edge[row] + 3) row++; edge[row] = xm + r; sl[key] = { xm, row, r }; };
+    prom.forEach(k => { if (hid.has(k)) { const g = cl.find(c => c[0] === k); if (g) put("c" + k, g.reduce((s, j) => s + xmOf(j), 0) / g.length, rMax); } else put(k, xmOf(k), R(EV[k])); });
+    return { sl, edge, hid }; };
+  clusters = []; let L = layout(clusters);
+  while (L.edge.length > maxRows) {
+    // densest chain of colliding, not-yet-clustered markers (each within one marker width of the previous)
+    const free = prom.filter(k => !L.hid.has(k)), chains = [];
+    free.forEach(k => { if (EV[k].anchor) { chains.push([]); return; } const c = chains[chains.length - 1];
+      if (c && c.length && xmOf(k) - xmOf(c[c.length - 1]) < 2 * rMax + 3) c.push(k); else chains.push([k]); });
+    const best = chains.filter(c => c.length >= 3 && !expanded.has(c[0]) && !c.includes(sel)).sort((a, b) => b.length - a.length)[0];
+    if (!best) break; clusters.push(best); L = layout(clusters);
+  }
+  const hidden = L.hid; Object.assign(slots, L.sl); lastEdge.push(...L.edge);
   const nRows = Math.max(1, lastEdge.length), rail = 12 + nRows * rowH;
   const H = rail + priceH + gap + volH + axisH;
   svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.setAttribute("height", H);
@@ -317,6 +340,15 @@ function draw() {
 
   if (hiPhase != null && CH[hiPhase]) { const c = CH[hiPhase], i0 = idxOf[c.from], i1 = idxOf[c.to], w = (x1 - x0) / N;
     el("rect", { x: X(i0), y: py0, width: X(i1) - X(i0) + w / 2, height: py1 - py0, fill: css("--band") }, svg); }
+  // multi-session runs: a shaded band across the price pane, labelled with the run's move
+  (D.runs || []).forEach((x, ri) => { const i0 = idxOf[x.start], i1 = idxOf[x.end]; if (i0 == null || i1 == null) return; const w = (x1 - x0) / N;
+    const up = x.abn >= 0, col = up ? css("--up") : css("--down"), pid = "hatch" + (up ? "U" : "D");
+    if (!svg.querySelector("#" + pid)) { const defs = el("defs", {}, svg), pt = el("pattern", { id: pid, width: 6, height: 6, patternUnits: "userSpaceOnUse", patternTransform: "rotate(45)" }, defs);
+      el("rect", { width: 6, height: 6, fill: up ? css("--up-soft") : css("--down-soft") }, pt); el("line", { x1: 0, y1: 0, x2: 0, y2: 6, stroke: col, "stroke-width": 1, opacity: 0.35 }, pt); }
+    const g = el("g", { class: "runband", tabindex: 0, role: "button", "aria-label": `Run from ${fmtD(x.start)} to ${fmtD(x.end)}: ${pct(x.abn)} versus the market` }, svg);
+    el("rect", { x: X(i0) - w / 2, y: py0, width: X(i1) - X(i0) + w, height: py1 - py0, fill: `url(#${pid})`, stroke: col, "stroke-dasharray": "3 3", "stroke-width": selRun === ri ? 2 : 1, opacity: 0.75 }, g);
+    el("text", { x: X(i0) + 3, y: py1 - 6, fill: MUT, "font-size": 10.5, class: "halo" }, g).textContent = `Run: ${pct(x.abn)} vs market`;
+    g.addEventListener("click", () => selectRun(ri)); g.addEventListener("keydown", ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); selectRun(ri); } }); });
   // story phases: dashed boundaries and letters
   CH.forEach((c, n) => { const i0 = idxOf[c.from]; if (i0 == null) return;
     if (n > 0) el("line", { x1: X(i0), x2: X(i0), y1: py0, y2: py1, stroke: MUT, "stroke-dasharray": "2 4", opacity: 0.7 }, svg);
@@ -370,8 +402,23 @@ function draw() {
   if ($("optTurn").checked && !rel && !daily) D.turning_points.forEach(t => { const i = idxOf[t.date]; if (i == null) return; const up = t.kind === "high";
     el("text", { x: X(i), y: Y(t.close) + (up ? -8 : 15), "text-anchor": "middle", fill: MUT, "font-size": 11, "font-family": "var(--mono)" }, svg).textContent = (up ? "\u25B2 " : "\u25BC ") + t.close.toFixed(2); });
 
+  // smaller moves: a coloured dot on the price line, same panel on click
+  EV.forEach((e, k) => { if (!visible(e) || e.prominent !== false) return; const i = idxOf[e.dates[e.dates.length - 1]];
+    const col = e.tier === "none" ? css("--none") : (e.ret >= 0 ? css("--up") : css("--down"));
+    const g = el("g", { class: "mk sm", tabindex: 0, role: "button", "aria-label": `Event ${k + 1} (smaller move): ${e.label}, ${pct(e.ret)}` }, svg);
+    // a small numbered circle: secondary to the rail markers, but every event number is readable on the chart
+    const rs = sel === k ? 9 : 7.5, ring = el("circle", { cx: X(i), cy: Y(main[i]), r: rs, fill: e.tier === "confirmed" ? col : css("--surface"), stroke: col, "stroke-width": 1.6 }, g);
+    if (e.tier === "none") ring.setAttribute("stroke-dasharray", "2.5 2");
+    el("text", { x: X(i), y: Y(main[i]) + 3, "text-anchor": "middle", fill: e.tier === "confirmed" ? "#fff" : col, "font-size": 8.5, "font-weight": 600 }, g).textContent = k + 1;
+    g.addEventListener("click", () => select(k)); g.addEventListener("keydown", ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); select(k); } }); });
+  // clusters of crowded markers
+  clusters.forEach(c => { const { xm, row, r } = slots["c" + c[0]], cy = rail - 6 - rMax - row * rowH;
+    const g = el("g", { class: "mk cl", tabindex: 0, role: "button", "aria-label": `${c.length} events close together; click to expand` }, svg);
+    el("circle", { cx: xm, cy, r, fill: css("--ink"), stroke: "none" }, g);
+    el("text", { x: xm, y: cy + 3.8, "text-anchor": "middle", fill: css("--surface"), "font-size": 11, "font-weight": 600 }, g).textContent = c.length;
+    const go = () => { expanded.add(c[0]); draw(); }; g.addEventListener("click", go); g.addEventListener("keydown", ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); go(); } }); });
   // event markers
-  EV.forEach((e, k) => { if (!visible(e)) return;
+  EV.forEach((e, k) => { if (!visible(e) || e.prominent === false || hidden.has(k)) return;
     const i = idxOf[e.dates[e.dates.length - 1]], { xm, row, r } = slots[k];
     const col = e.tier === "none" ? css("--none") : (e.ret >= 0 ? css("--up") : css("--down"));
     const cy = rail - 6 - rMax - row * rowH;
@@ -379,6 +426,7 @@ function draw() {
     const g = el("g", { class: "mk", tabindex: 0, role: "button", "aria-label": `Event ${k + 1}: ${e.label}, ${pct(e.ret)}` }, svg);
     const ring = el("circle", { class: "ring", cx: xm, cy, r, fill: e.tier === "confirmed" ? col : css("--surface"), stroke: col, "stroke-width": e.tier === "confirmed" ? 0 : 2 }, g);
     if (e.tier === "none") { ring.setAttribute("stroke-dasharray", "3 2"); ring.setAttribute("stroke-width", 1.5); }
+    if (e.tier === "social") { ring.setAttribute("stroke-dasharray", "1 2.5"); ring.setAttribute("stroke-width", 2); ring.setAttribute("stroke-linecap", "round"); }
     if (sel === k) el("circle", { cx: xm, cy, r: r + 4, fill: "none", stroke: col, "stroke-width": 1.5 }, g);
     el("text", { x: xm, y: cy + 3.8, "text-anchor": "middle", fill: e.tier === "confirmed" ? "#fff" : col, "font-size": r < 9.5 ? 10 : 11 }, g).textContent = k + 1;
     g.addEventListener("click", () => select(k));
@@ -390,7 +438,8 @@ function draw() {
   const dot = el("circle", { r: 3.5, fill: css("--price"), opacity: 0, "pointer-events": "none" }, svg);
   const hit = el("rect", { x: x0, y: py0, width: x1 - x0, height: vy1 - py0, fill: "transparent" }, svg);
   const at = ev => { const rc = svg.getBoundingClientRect(); return Math.max(0, Math.min(N - 1, Math.floor(((ev.clientX - rc.left) * (W / rc.width) - x0) / (x1 - x0) * N))); };
-  hit.addEventListener("pointermove", ev => { const i = at(ev), d = days[i];
+  const runAt = i => (D.runs || []).findIndex(x => idxOf[x.start] <= i && i <= idxOf[x.end]);
+  hit.addEventListener("pointermove", ev => { const i = at(ev), d = days[i]; hit.style.cursor = runAt(i) >= 0 ? "pointer" : "default";
     cross.setAttribute("x1", X(i)); cross.setAttribute("x2", X(i)); cross.setAttribute("opacity", 0.5);
     dot.setAttribute("cx", X(i)); dot.setAttribute("cy", Y(main[i])); dot.setAttribute("opacity", daily ? 0 : 1);
     tip.innerHTML = `<div class="d">${fmtD(d.date)}${mkSet.has(d.date) ? "  \u2022  market-driven move" : ""}</div>` +
@@ -398,11 +447,13 @@ function draw() {
       `${D.ticker} ${pct(d.ret)} = market ${pct(d.mkt)} (\u03B2 ${d.beta.toFixed(2)} \u00D7 ${D.benchmark} ${pct(d.bench_ret)}) + stock-specific ${pct(d.abn)}<br>` +
       `Volume ${fmtV(d.v)} (${d.rvol.toFixed(1)}\u00D7 median)` + (d.ah ? "<br>Includes after-hours trading on a results release" : "") + (d.mech ? "<br>Index-driven volume: " + esc(d.mech) : "") +
       (ctxOf[d.date] ? "<br>Event: " + esc(ctxOf[d.date]) : "") +
+      (runAt(i) >= 0 ? "<br>Inside a run (click for what drove it)" : "") +
       (rel ? `<br>Cumulative stock-specific ${pct(specCum[i])}, market-explained ${pct(mktCum[i])}` : "");
     tip.style.display = "block"; const bx = box.getBoundingClientRect(); let tx = ev.clientX - bx.left + 14;
     if (tx + tip.offsetWidth > bx.width) tx = ev.clientX - bx.left - tip.offsetWidth - 14; tip.style.left = Math.max(0, tx) + "px"; tip.style.top = (ev.clientY - bx.top + 14) + "px"; });
   hit.addEventListener("pointerleave", () => { tip.style.display = "none"; cross.setAttribute("opacity", 0); dot.setAttribute("opacity", 0); });
-  hit.addEventListener("click", ev => { const i = at(ev); const k = EV.findIndex(e => visible(e) && e.dates.some(dd => Math.abs(idxOf[dd] - i) <= 1)); if (k >= 0) select(k); });
+  hit.addEventListener("click", ev => { const i = at(ev); const k = EV.findIndex(e => visible(e) && e.dates.some(dd => Math.abs(idxOf[dd] - i) <= 1));
+    if (k >= 0) { select(k); return; } const ri = runAt(i); if (ri >= 0) selectRun(ri); });
 }
 
 function niceTicks(lo, hi, logS) {
@@ -430,17 +481,30 @@ function phases() {
 }
 
 // ---------- detail ----------
-const TIER = { confirmed: "Company-confirmed", reported: "Reported in news", none: "No catalyst found" };
+const TIER = { confirmed: "Company-confirmed", reported: "Reported in news", social: "Context from X posts that day, not a confirmed cause", none: "No catalyst found" };
+function selectRun(ri) {
+  const x = D.runs[ri], det = $("detail"); sel = null; selRun = ri;
+  det.className = "detail " + (x.tier === "none" ? "na" : (x.abn >= 0 ? "up" : "dn"));
+  const num = (k_, v, cls) => `<div><span>${k_}</span><b class="${cls || ""}">${v}</b></div>`;
+  det.innerHTML = `<div class="ev-top"><p class="ev-date">Run, ${fmtDs(x.start)} to ${fmtD(x.end)} (${x.n} sessions)</p></div>
+    <h3 class="ev-title">${esc(x.label)}</h3>
+    <p class="ev-meta">${TIER[x.tier] || ""}, multi-day move with no single standout day</p>
+    <div class="ev-nums">${num(D.ticker, pct(x.price), x.price >= 0 ? "pos" : "neg")}${num(D.factor_label || "Market part", pct(x.mkt))}${num("Stock-specific", pct(x.abn), x.abn >= 0 ? "pos" : "neg")}</div>
+    <p class="ev-body">${esc(x.summary || "")}</p>
+    <p class="ev-foot">A run is flagged when the stock-specific moves over ${D.params.run_len || 10} sessions add up to an unusually large total, even though no single day stood out.</p>
+    <details class="ev-srcs"><summary>Sources (${(x.sources || []).length})</summary><ul class="ev-src">${(x.sources || []).map(s => `<li><a href="${s.url}" target="_blank" rel="noopener">${esc(s.title)}</a><br>${esc(s.source_name)}${s.date ? ", " + fmtD(s.date) : ""}</li>`).join("")}</ul></details>`;
+  draw();
+}
 function select(k) {
-  sel = k; const e = EV[k], det = $("detail");
+  sel = k; selRun = null; const e = EV[k], det = $("detail");
   det.className = "detail " + (e.tier === "none" ? "na" : (e.ret >= 0 ? "up" : "dn"));
   const dates = e.dates.length > 1 ? fmtDs(e.dates[0]) + " to " + fmtD(e.dates[e.dates.length - 1]) : fmtD(e.dates[0]);
   const num = (k_, v, cls) => `<div><span>${k_}</span><b class="${cls || ""}">${v}</b></div>`;
   const prim = e.sources.filter(s => /Filings|Press Releases|press release|Transcripts/.test(s.source_name)), sec = e.sources.filter(s => !prim.includes(s));
   det.innerHTML = `<div class="ev-top"><p class="ev-date">${k + 1} of ${EV.length}, ${dates}</p><div class="ev-step"><button id="prev" aria-label="Previous event">‹</button><button id="next" aria-label="Next event">›</button></div></div>
     <h3 class="ev-title">${esc(e.label)}</h3>
-    <p class="ev-meta">${TIER[e.tier]}, ${esc(e.category.toLowerCase())}${e.timing ? ", " + esc(e.timing.toLowerCase()) : ""}</p>
-    <div class="ev-nums">${num(D.ticker, pct(e.ret), e.ret >= 0 ? "pos" : "neg")}${num("Market part", pct(e.mkt))}${num("Stock-specific", pct(e.abn), e.abn >= 0 ? "pos" : "neg")}</div>
+    <p class="ev-meta">${TIER[e.tier]}${e.single_source ? " (single source)" : ""}, ${esc(e.category.toLowerCase())}${e.signal === "price" ? ", on normal volume" : ""}${e.signal === "rank" ? ", one of the window's largest stock-specific moves" : ""}${e.timing ? ", " + esc(e.timing.toLowerCase()) : ""}</p>
+    <div class="ev-nums">${num(D.ticker, pct(e.ret), e.ret >= 0 ? "pos" : "neg")}${num(D.factor_label || "Market part", pct(e.mkt))}${num("Stock-specific", pct(e.abn), e.abn >= 0 ? "pos" : "neg")}</div>
     <p class="ev-body">${esc(e.summary)}</p>
     <p class="ev-foot">Volume ${e.rvol.toFixed(1)}× normal${e.follow_on ? ". " + esc(e.follow_on) : ""}</p>
     <details class="ev-srcs"><summary>Sources (${e.sources.length}${prim.length ? ", " + prim.length + " company" : ""})</summary>
@@ -453,7 +517,7 @@ function step(dir) { let k = sel; for (let n = 0; n < EV.length; n++) { k = (k +
 function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
 function emptyDetail() {
   $("detail").className = "detail";
-  $("detail").innerHTML = `<p class="hint">Select a marker to see what moved the stock that day. Bigger markers are bigger stock-specific moves; grey diamonds are days the market explains.</p>`;
+  $("detail").innerHTML = `<p class="hint">Select a marker to see what moved the stock that day. Numbered markers are the moves that tell the story (bigger marker, bigger stock-specific move); small numbered circles on the line are smaller flagged moves; a dark badge groups several close-together events. Grey diamonds are days the market explains. Hatched bands are runs: multi-day moves with no single standout day.</p>`;
 }
 
 // ---------- tables ----------
@@ -462,12 +526,13 @@ function tables() {
     return `<tr class="row" tabindex="0" data-k="${k}"><td><span class="idx" style="background:${col}">${k + 1}</span></td>
       <td class="n">${e.dates.length > 1 ? fmtDs(e.dates[0]) + "\u2013" + fmtDs(e.dates[e.dates.length - 1]) : fmtDs(e.dates[0])} ${e.dates[0].slice(2, 4)}</td>
       <td class="n ${e.ret >= 0 ? "pos" : "neg"}">${pct(e.ret)}</td><td class="n ${e.abn >= 0 ? "pos" : "neg"}">${pct(e.abn)}</td>
-      <td>${esc(e.label)}</td><td class="muted">${{ confirmed: "Confirmed", reported: "Reported", none: "None found" }[e.tier]}</td></tr>`; }).join("");
-  $("ledger").innerHTML = `<thead><tr><th></th><th class="n">Date</th><th class="n">Move</th><th class="n">Stock-specific</th><th>What happened</th><th>Attribution</th></tr></thead><tbody>${rows}</tbody>`;
+      <td>${esc(e.label)}</td><td class="muted">${e.prominent === false ? "Dot" : "Marker"}</td><td class="muted">${{ confirmed: "Confirmed", reported: "Reported", social: "X context", none: "None found" }[e.tier]}</td></tr>`; }).join("");
+  $("ledger").innerHTML = `<thead><tr><th></th><th class="n">Date</th><th class="n">Move</th><th class="n">Stock-specific</th><th>What happened</th><th>On chart</th><th>Attribution</th></tr></thead><tbody>${rows}</tbody>`;
   document.querySelectorAll("#ledger tr.row").forEach(r => { const go = () => { if (!visible(EV[+r.dataset.k])) $("optNone").checked = true; select(+r.dataset.k); box.scrollIntoView({ behavior: "smooth", block: "nearest" }); };
     r.addEventListener("click", go); r.addEventListener("keydown", ev => { if (ev.key === "Enter") go(); }); });
-  const ce = D.context_events || [], md = D.mechanical_days || [];
+  const ce = D.context_events || [], md = D.mechanical_days || [], rn = D.runs || [];
   $("other").innerHTML = (ce.length ? "<b>Other company events</b> (marked with open triangles; none moved the stock beyond the screen): " + ce.map(c => esc(fmtDs(c.date)) + " " + esc(c.label) + ` (<a href="${c.source.url}" target="_blank" rel="noopener">source</a>)`).join("; ") + ". " : "") +
+    (rn.length ? "<br><b>Multi-day runs</b> (shaded; no single day stood out): " + rn.map(x => fmtDs(x.start) + " to " + fmtDs(x.end) + " " + pct(x.abn) + ": " + esc(x.summary || x.label || "") + (x.sources && x.sources[0] ? ` (<a href="${x.sources[0].url}" target="_blank" rel="noopener">source</a>)` : "")).join("; ") + "." : "") +
     (md.length ? "<br><b>Heavy volume from index mechanics</b>, not news: " + md.map(m => fmtDs(m.date) + " (" + esc(m.label.charAt(0).toLowerCase() + m.label.slice(1)).replace("russell", "Russell") + ")").join(", ") + "." : "");
   $("mktSum").textContent = "Large moves the market explained (" + MK.length + ")";
   $("mktIntro").textContent = MK.length ? `These days moved ${D.ticker} at least ${D.params.z_min}\u00D7 a normal day in raw terms, but most of the move is what beta \u00D7 ${D.benchmark} predicts, so they get no story. They are the grey diamonds on the chart.` : "No large market-driven days in this window.";
@@ -478,7 +543,7 @@ function tables() {
 function method() {
   const P = D.params;
   $("method").innerHTML = `
-  <div><p><b>Which days get a marker.</b> Each day's move is split into a market part (the stock's ${P.est_win}-day beta \u00D7 ${D.benchmark}'s move) and a stock-specific part (the rest). A day is marked when the stock-specific part is at least ${P.z_min}\u00D7 the stock's normal daily variation and volume is at least ${P.rvol_min}\u00D7 its 50-day median, or at least ${P.z_always}\u00D7 normal on any volume. Every marked day is researched; none are dropped to fit a limit.</p>
+  <div><p><b>Which days get a marker.</b> Each day's move is split into a market part (the stock's ${P.est_win}-day beta \u00D7 ${D.benchmark}'s move) and a stock-specific part (the rest). A day is marked when its stock-specific part is at least ${P.z_min}\u00D7 the stock's normal daily variation on volume at least ${P.rvol_min}\u00D7 its 50-day median, or at least ${P.z_price}\u00D7 on any volume; the window's ${P.top_n} largest stock-specific moves are always marked. A hatched run marks ${P.run_len} sessions whose stock-specific moves add up to an unusual total with no single standout day. Every marked day is researched; none are dropped to fit a limit.</p>
   <p><b>Daily split.</b> Each bar is one day: grey is the market part, colour is the stock-specific part. The shaded band is ${P.z_min}× the stock's typical stock-specific move; a coloured segment beyond it is a screened day. Event days are drawn solid.</p>
   <p><b>Cumulative split.</b> This view compounds the two parts separately. The stock-specific line moves only on company news and stock-specific trading; the market-explained line is what the stock would have done if it had only tracked ${D.benchmark} at its beta. The two compound to roughly the total return.</p></div>
   <div><p><b>Attribution.</b> A cause must be published before the close of the session it is said to have moved. A release after 16:00 ET moves the next session. "Company-confirmed" means a timestamped company release or filing in that window. "Reported in news" means only secondary coverage was found. "No catalyst found" days are shown, not hidden: a large move with no cause is information too. Rating changes on the same day as a company release are a reaction to it, not its cause.</p>

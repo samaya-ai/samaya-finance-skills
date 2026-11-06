@@ -13,7 +13,25 @@ BROKERS = ["goldman", "morgan stanley", "jpmorgan", "jp morgan", "citi", "barcla
            "bernstein", "evercore", "keybanc", "mizuho", "rbc", "bmo", "loop capital", "raymond james"]
 BANNED = ["consensus", "estimate", "street expect", "analysts expected", "news_id", "buy the", "sell the stock",
           "undervalued", "overvalued", "attractive valuation"]
-TIERS = {"confirmed", "reported", "none"}
+# Web sources: tested on what they are, not who published them (no allowlist).
+WEB_KINDS = {"original_report", "primary_document", "wire_relay"}
+WEB_BLOCKLIST = ["stockstory", "quiver", "marketbeat", "finbold", "invezz", "24/7 wall st", "247wallst",
+                 "chartexchange", "altindex", "tipranks", "simply wall st", "tapbit"]  # post-hoc move explainers seen in testing
+EXPLAINER = [r"\bwhy\b.*\b(stocks?|shares)\b", r"what'?s going on with", r"\bstock is (up|down|trading)\b",
+             r"\b(stocks?|shares?)( price)? (surges?|soars?|jumps?|pops?|plunges?|tumbles?|sinks?|slides?|slide|rally|rallies)\b.*\b(on|as|after)\b"]
+HEDGES = ["appears to", "appear to", "may have", "might have", "likely due", "likely driven", "seems to", "seem to",
+          "could be", "possibly", "probably"]
+def run_stats(x):
+    """Run entry for the page: the research plus price change, explained part and session count."""
+    rows = [d for d in RUN_DAYS if x["start"] <= d["date"] <= x["end"]]
+    prev = [d for d in RUN_DAYS if d["date"] < x["start"]]
+    base = prev[-1]["c"] if prev else rows[0]["c"]
+    return {**x, "n": len(rows), "price": rows[-1]["c"] / base - 1,
+            "mkt": math.prod(1 + expl(d) for d in rows) - 1, "abn": math.prod(1 + d["abn"] for d in rows) - 1}
+RUN_DAYS = []
+PROMINENCE_SHARE = 0.75
+def expl(d): return d["beta"] * d["bench_ret"] + (d.get("sec_part") or 0.0)
+TIERS = {"confirmed", "reported", "social", "none"}  # social = X posts dated that session; last resort, never Reddit
 PRIMARY = ("Filings", "Press Releases", "press release feed")  # transcripts are company sources but carry no release time
 DENSITY_WARN = 1.5   # events per month above which the render warns (does not block)
 NUM = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve"]
@@ -91,6 +109,47 @@ def main():
                 block(f"event {k}: malformed url {u}")
             elif u not in seen:
                 block(f"event {k}: url {u} was not returned by Samaya this session")
+        for s in src:  # Reddit is excluded outright: undated, so it can never meet the timing rule
+            if "reddit" in (s.get("title", "") + s.get("source_name", "")).lower() or s.get("title", "").startswith("r/"):
+                block(f"event {k}: Reddit source '{s.get('title', '')[:40]}' is not allowed")
+        social = [s for s in src if s.get("source_name") == "Social Media"]
+        support = []  # sources that may carry the tier: not social, not an explainer headline
+        for s in src:
+            title = s.get("title", ""); low_t = title.lower()
+            explainer = any(re.search(p, low_t) for p in EXPLAINER)
+            if s.get("source_name") == "Web":
+                pub = (s.get("publisher") or "").strip()
+                if not pub or s.get("kind") not in WEB_KINDS or not (s.get("evidence") or "").strip():
+                    block(f"event {k}: Web source '{title[:40]}' needs publisher, kind ({'/'.join(sorted(WEB_KINDS))}) and evidence")
+                    continue
+                if pub.lower() not in (title + " " + (s.get("byline") or "")).lower():
+                    block(f"event {k}: publisher '{pub}' does not appear in the title or byline of '{title[:40]}'")
+                if any(b in (pub + " " + title).lower() for b in WEB_BLOCKLIST):
+                    block(f"event {k}: '{pub}' publishes post-hoc move explainers and cannot be cited")
+                if any(h in s["evidence"].lower() for h in HEDGES):
+                    block(f"event {k}: evidence from '{pub}' is hedged speculation, not a reported event")
+                if len(s["evidence"].split()) > 30:
+                    block(f"event {k}: evidence quote from '{pub}' over 30 words")
+            if s.get("source_name") != "Social Media" and not explainer and "(searched)" not in title:
+                support.append(s)
+        if e["tier"] in ("confirmed", "reported") and src and not support:
+            block(f"event {k}: tier '{e['tier']}' rests only on explainer headlines or social posts")
+        web = [s for s in support if s.get("source_name") == "Web"]
+        if e["tier"] == "reported" and support and len(web) == len(support):
+            originals = {s.get("publisher", "").lower() for s in web if s.get("kind") != "wire_relay"}  # a relay is not independent
+            if not any(s.get("kind") == "primary_document" for s in web) and len(originals) < 2:
+                if not (e.get("single_source") and len(originals) == 1):
+                    block(f"event {k}: a Web-only explanation needs a primary document or two independent publishers"
+                          f" (or mark it single_source with one original report)")
+        if e.get("single_source") and e["tier"] != "reported":
+            block(f"event {k}: single_source applies only to tier 'reported'")
+        if e["tier"] in ("confirmed", "reported") and src and len(social) == len(src):
+            block(f"event {k}: tier '{e['tier']}' rests only on social posts; use tier 'social'")
+        if e["tier"] == "social":
+            d0 = e["dates"][0]
+            prev = dates[dates.index(d0) - 1] if dates.index(d0) > 0 else d0
+            if not any(prev <= (s.get("date") or "") <= d0 for s in social):
+                block(f"event {k}: tier 'social' needs an X post dated {prev} to {d0}")
         if e["tier"] == "confirmed":
             if not any(any(p in s["source_name"] for p in PRIMARY) for s in src):
                 block(f"event {k}: confirmed without a primary source")
@@ -103,7 +162,7 @@ def main():
     # 4. visible text: no brokers, no consensus, no internal ids
     for k, e in enumerate(evs, 1):
         txt = " ".join([e["label"], e["summary"], e.get("follow_on") or "", e.get("timing") or ""]).lower()
-        for b in BROKERS:
+        for b in [b_ for b_ in BROKERS if b_ not in E.get('company','').lower()]:
             if re.search(r"\b" + re.escape(b) + r"\b", txt):
                 block(f"event {k}: broker name '{b}' in visible text")
         for w in BANNED:
@@ -114,6 +173,15 @@ def main():
         if len(e["summary"].split()) > 40:
             block(f"event {k}: summary over 40 words ({len(e['summary'].split())})")
 
+    # runs (multi-session stock-specific moves with no flagged day inside) must be researched too
+    run_keys = {(x["start"], x["end"]) for x in E.get("runs", [])}
+    for x in C.get("runs", []):
+        if (x["start"], x["end"]) not in run_keys:
+            block(f"run {x['start']}..{x['end']} ({x['abn']:+.1%}) has no entry in events.json 'runs'")
+    for x in E.get("runs", []):
+        if x.get("tier") not in TIERS: block(f"run {x.get('start')}: tier {x.get('tier')!r} invalid")
+        for s in x.get("sources", []):
+            if s["url"] not in seen: block(f"run {x['start']}: url {s['url']} not returned by Samaya")
     for c in E.get("context_events", []):
         if c["date"] not in dates: block(f"context event {c['date']} is not a session in the window")
         if c["source"]["url"] not in seen: block(f"context event {c['date']}: url not returned by Samaya")
@@ -127,16 +195,18 @@ def main():
         e["ret"] = comp([r["ret"] for r in rows])
         e["bench_ret"] = comp([r["bench_ret"] for r in rows])
         e["abn"] = sum(r["abn"] for r in rows)
-        e["mkt"] = sum(r["beta"] * r["bench_ret"] for r in rows)
+        e["mkt"] = sum(expl(r) for r in rows)
         e["z"] = max((r["z"] for r in rows), key=abs)
-        e["rvol"] = max(r["rvol"] for r in rows)
+        e["rvol"] = max(r["rvol"] or 0 for r in rows)
+        sig = {cand[d].get("signal") for d in e["dates"] if d in cand}
+        e["signal"] = "strong" if "strong" in sig else ("price" if "price" in sig else "rank")
     ev_dates = set(used)
     S = dict(C["summary"])
     S["event_days_ret"] = comp([d["ret"] for d in days if d["date"] in ev_dates])
     S["other_days_ret"] = comp([d["ret"] for d in days if d["date"] not in ev_dates])
     S["n_event_sessions"] = len(ev_dates)
     market_moves = [{"date": d["date"], "ret": d["ret"], "bench_ret": d["bench_ret"], "beta": d["beta"],
-                     "mkt": d["beta"] * d["bench_ret"], "abn": d["abn"], "rvol": d["rvol"]}
+                     "mkt": expl(d), "abn": d["abn"], "rvol": d["rvol"]}
                     for d in days if d["date"] in set(C["market_days"])]
 
     S["mkt_part"] = comp([d["beta"] * d["bench_ret"] for d in days])
@@ -164,6 +234,21 @@ def main():
 
 
     # ---- story layer: model-written prose, mechanically checked ----
+    RUN_DAYS[:] = days
+    # prominence: numbered markers for the moves that tell the story; the rest are small dots.
+    # Proportions, not counts: the smallest set covering PROMINENCE_SHARE of flagged stock-specific
+    # movement, plus every results reaction and the window's three largest moves.
+    size = {k: sum(abs(math.log(1 + byd[d]["abn"])) for d in e["dates"]) for k, e in enumerate(evs)}
+    order = sorted(size, key=lambda k: -size[k]); tot = sum(size.values()) or 1.0; cum = 0.0; prom = set()
+    for k in order:
+        if cum >= PROMINENCE_SHARE * tot: break
+        prom.add(k); cum += size[k]
+    prom |= set(order[:3])
+    t0s = {x["t0"] for x in E.get("releases", [])}
+    prom |= {k for k, e in enumerate(evs) if e["category"].startswith("Earnings") or t0s & set(e["dates"])}
+    anchors = set(order[:3]) | {k for k, e in enumerate(evs) if e["category"].startswith("Earnings") or t0s & set(e["dates"])}
+    for k, e in enumerate(evs): e["prominent"] = k in prom; e["anchor"] = k in anchors
+    print(f"prominent markers: {len(prom)} of {len(evs)} events (share {PROMINENCE_SHARE:.0%} + results + top 3)")
     story = E.get("story")
     if not story:
         print("BLOCK: events.json has no story (headline + phases are required)"); sys.exit(1)
@@ -185,7 +270,7 @@ def main():
             i0, i1 = dates.index(a_), dates.index(b_); rows = days[i0 + 1:i1 + 1]
             refd = {d for x in refs for d in evs[ev_first[x]]["dates"]} if refs else set()
             o = {"ret": days[i1]["c"] / days[i0]["c"] - 1,
-                 "mkt": comp([r_["beta"] * r_["bench_ret"] for r_ in rows]), "spec": comp([r_["abn"] for r_ in rows]),
+                 "mkt": comp([expl(r_) for r_ in rows]), "spec": comp([r_["abn"] for r_ in rows]),
                  "flagged": comp([r_["ret"] for r_ in rows if r_["date"] in ev_dates]),
                  "other": comp([r_["ret"] for r_ in rows if r_["date"] not in ev_dates]),
                  "refs": comp([byd[d]["ret"] for d in sorted(refd)]) if refd else 0.0,
@@ -195,6 +280,12 @@ def main():
         for v in (S["total_ret"], S["bench_ret"], S["mkt_part"], S["spec_part"], S["event_days_ret"], S["other_days_ret"]): pcts.add(round(abs(v) * 100))
         usd |= {round(S["hi"]), round(S["lo"])}
         for c in ch:
+            if c["from"] in dates and c["to"] in dates:  # drift gate: big unexplained moves between flagged days need phase research
+                i0_, i1_ = dates.index(c["from"]), dates.index(c["to"])
+                drift = comp([r_["abn"] for r_ in days[i0_ + 1:i1_ + 1] if r_["date"] not in ev_dates])
+                has_run = any(c["from"] <= x["start"] and x["end"] <= c["to"] for x in E.get("runs", []))
+                if abs(drift) > 0.08 and not c.get("context_sources") and not has_run:
+                    st_err.append(f"phase '{c['title']}': {drift:+.1%} stock-specific move on unflagged sessions; research the phase as a window and cite it in context_sources")
             for x in (c["from"], c["to"]):
                 if x not in allowed:
                     st_err.append(f"chapter boundary {x} is not a turning point, the window's high/low or end, or the eve of a results reaction")
@@ -219,7 +310,7 @@ def main():
             low = " " + txt.lower() + " "
             for w in [r"\bwill\b", r"\bshould\b", r"\bbuy\b", r"\bupside\b", r"\bcheap\b", r"\bundervalued\b", r"\battractive\b", r"\blikely to\b", r"\bpoised\b", r"\bexpect the\b"]:
                 if re.search(w, low): st_err.append(f"story '{name}': speculative or recommendation language '{w[2:-2]}'")
-            for b_ in BROKERS:
+            for b_ in [x for x in BROKERS if x not in E.get('company','').lower()]:
                 if re.search(r"\b" + re.escape(b_) + r"\b", low): st_err.append(f"story '{name}': broker name '{b_}'")
             clean = re.sub(r"\b(19|20)\d\d\b|\bQ[1-4]\b|\bFY\d{4}\b|\b\d{1,2} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b", " ", txt)
             for m_ in re.finditer(r"(\$)?(\d[\d,]*(?:\.\d+)?)(?:-(\d+))?(%)?", clean):
@@ -250,10 +341,12 @@ def main():
         "log_scale_note": ("The price axis is logarithmic because the range is wide, so equal distances are equal percentage moves."
                            if hi / lo > 2.2 else "The price axis is linear."),
         "events": [{k: e.get(k) for k in ("dates", "label", "category", "tier", "timing", "summary", "follow_on",
-                                          "sources", "ret", "bench_ret", "abn", "mkt", "z", "rvol")} for e in evs],
+                                          "sources", "ret", "bench_ret", "abn", "mkt", "z", "rvol", "signal", "single_source", "prominent", "anchor")} for e in evs],
+        "runs": [run_stats(x) for x in E.get("runs", [])],
+        "factor_label": "Market + sector part" if C.get("sector") else "Market part",
         "days": [{"date": d["date"], "o": d["o"], "h": d["h"], "l": d["l"], "c": d["c"], "v": d["v"],
                   "bench": d["bench"], "ret": round(d["ret"], 6), "bench_ret": round(d["bench_ret"], 6),
-                  "abn": round(d["abn"], 6), "mkt": round(d["beta"] * d["bench_ret"], 6), "beta": round(d["beta"], 3), "sig": round(d["sigma"], 6),
+                  "abn": round(d["abn"], 6), "mkt": round(expl(d), 6), "beta": round(d["beta"], 3), "sig": round(d["sigma"], 6),
                   "rvol": round(d["rvol"] or 0, 3), "medv": d["avg_vol"], "mech": d.get("mech"),
                   "ah": d["date"] in ah} for d in days],
     }
